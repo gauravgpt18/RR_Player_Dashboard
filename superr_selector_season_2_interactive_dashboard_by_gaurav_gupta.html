@@ -1,0 +1,625 @@
+<!-- ... existing code ... -->
+  <title>SupeRR Selector Season 2 — Interactive Dashboard by Gaurav Gupta</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    body {
+      font-family: 'Inter', sans-serif;
+      background-color: #080E1E;
+      color: #F8FAFC;
+    }
+    .rr-header {
+      background: linear-gradient(125deg, #0F172A 0%, #1E293B 45%, #831843 100%);
+    }
+    .glass-card {
+      background: rgba(15, 23, 42, 0.85);
+      border: 1px solid rgba(51, 65, 85, 0.8);
+      backdrop-filter: blur(8px);
+    }
+    .chart-wrapper {
+      position: relative;
+      height: 280px;
+      width: 100%;
+    }
+    input[type="range"] {
+      accent-color: #EC4899;
+    }
+  </style>
+</head>
+<body class="min-h-screen pb-16">
+
+<!-- TOP HEADER -->
+<header class="rr-header border-b border-slate-700/80 px-5 py-6 md:px-10 shadow-xl">
+  <div class="max-w-7xl mx-auto flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+    <div>
+      <div class="inline-flex items-center gap-2 text-xs font-extrabold uppercase tracking-widest text-pink-400 mb-1">
+        <span>Rajasthan Royals • SupeRR Selector Season 2 (Round 1)</span>
+      </div>
+      <h1 class="text-2xl md:text-3xl font-extrabold text-white tracking-tight">
+        Most Reliable T20 Players Under Pressure &amp; IPL 2027 Auction Suite
+      </h1>
+      <p class="text-xs md:text-sm text-slate-300 mt-1">
+        Ball-by-Ball Evaluation of 200,999 Deliveries Across 867 IPL &amp; T20 International Matches (2022–2026)
+      </p>
+      <div class="mt-3 flex flex-wrap items-center gap-2">
+        <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-bold bg-amber-400/15 text-amber-300 border border-amber-400/30">
+          Analyst: Gaurav Gupta
+        </span>
+        <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-emerald-400/15 text-emerald-300 border border-emerald-400/30">
+          IPL-Eligible Top-10 Bowlers Updated (Yuzvendra Chahal Included)
+        </span>
+      </div>
+    </div>
+    <div class="flex flex-wrap gap-2">
+      <button onclick="resetWeights()" class="px-4 py-2.5 rounded-lg bg-pink-600 hover:bg-pink-500 text-white text-xs font-bold shadow-lg transition cursor-pointer">
+        Reset Official Weights (70 / 15 / 15)
+      </button>
+    </div>
+  </div>
+</header>
+
+<!-- KPI SUMMARY CARDS -->
+<section class="max-w-7xl mx-auto px-5 md:px-10 mt-6">
+  <div class="grid grid-cols-2 md:grid-cols-5 gap-3 md:gap-4">
+    <div class="glass-card rounded-xl p-4 border-l-4 border-l-pink-500">
+      <div class="text-xs font-semibold text-slate-400">Deliveries Analyzed</div>
+      <div class="text-xl md:text-2xl font-extrabold text-white mt-1">200,999</div>
+      <div class="text-[11px] text-slate-400 mt-0.5">867 Matches (2022–2026)</div>
+    </div>
+    <div class="glass-card rounded-xl p-4 border-l-4 border-l-blue-500">
+      <div class="text-xs font-semibold text-slate-400">High-Pressure Balls</div>
+      <div class="text-xl md:text-2xl font-extrabold text-white mt-1">47,728</div>
+      <div class="text-[11px] text-slate-400 mt-0.5">Pressure Score ≥ 60 (23.7%)</div>
+    </div>
+    <div class="glass-card rounded-xl p-4 border-l-4 border-l-rose-500">
+      <div class="text-xs font-semibold text-slate-400">Wicket Risk Jump</div>
+      <div class="text-xl md:text-2xl font-extrabold text-rose-400 mt-1">+111.3%</div>
+      <div class="text-[11px] text-slate-400 mt-0.5">4.70 → 9.93 Wkts / 100b</div>
+    </div>
+    <div class="glass-card rounded-xl p-4 border-l-4 border-l-emerald-500">
+      <div class="text-xs font-semibold text-slate-400">#1 Clutch Batter</div>
+      <div class="text-base md:text-lg font-extrabold text-emerald-400 mt-1 truncate" id="kpiTopBat">Namboori Tilak Varma</div>
+      <div class="text-[11px] text-slate-400 mt-0.5">Rating 72.42 • 197.4 SR</div>
+    </div>
+    <div class="glass-card rounded-xl p-4 border-l-4 border-l-amber-500 col-span-2 md:col-span-1">
+      <div class="text-xs font-semibold text-slate-400">#1 Clutch Bowler</div>
+      <div class="text-base md:text-lg font-extrabold text-amber-400 mt-1 truncate" id="kpiTopBowl">Jasprit Bumrah</div>
+      <div class="text-[11px] text-slate-400 mt-0.5">Rating 77.08 • 7.21 Econ</div>
+    </div>
+  </div>
+</section>
+
+<!-- QUICK NAVIGATION BAR -->
+<nav class="max-w-7xl mx-auto px-5 md:px-10 mt-6">
+  <div class="flex flex-wrap gap-2 bg-slate-900/90 p-2 rounded-xl border border-slate-800">
+    <a href="#section-top10" class="px-3.5 py-2 rounded-lg text-xs font-bold bg-pink-600 text-white">Top 10 Batters &amp; Bowlers</a>
+    <a href="#section-charts" class="px-3.5 py-2 rounded-lg text-xs font-bold bg-slate-800 hover:bg-slate-700 text-slate-200 transition">4 Visual Graphs</a>
+    <a href="#section-auction" class="px-3.5 py-2 rounded-lg text-xs font-bold bg-slate-800 hover:bg-slate-700 text-slate-200 transition">RR IPL 2027 Auction Strategy</a>
+    <a href="#section-batters" class="px-3.5 py-2 rounded-lg text-xs font-bold bg-slate-800 hover:bg-slate-700 text-slate-200 transition">All 39 Eligible Batters</a>
+    <a href="#section-bowlers" class="px-3.5 py-2 rounded-lg text-xs font-bold bg-slate-800 hover:bg-slate-700 text-slate-200 transition">All 60 Eligible Bowlers</a>
+    <a href="#section-death" class="px-3.5 py-2 rounded-lg text-xs font-bold bg-slate-800 hover:bg-slate-700 text-slate-200 transition">IPL Teams Death-Overs</a>
+  </div>
+</nav>
+
+<main class="max-w-7xl mx-auto px-5 md:px-10 mt-6 space-y-8">
+
+  <!-- SECTION 1: INTERACTIVE WEIGHT SIMULATOR + TOP 10 TABLES -->
+  <section id="section-top10" class="space-y-4">
+    <div class="glass-card rounded-xl p-4 md:p-5">
+      <div class="flex items-center justify-between mb-3">
+        <h2 class="text-sm font-bold uppercase tracking-wider text-pink-400">Interactive Rating Weight Simulator (Live Sensitivity Test)</h2>
+        <span class="text-xs text-slate-400">Move sliders to test rank stability</span>
+      </div>
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        <div class="bg-slate-950/70 p-3 rounded-lg border border-slate-800">
+          <div class="flex justify-between text-xs font-semibold text-slate-300 mb-1">
+            <span>Pressure Excellence &amp; Volume</span>
+            <span class="text-pink-400 font-bold" id="lblW1">70%</span>
+          </div>
+          <input type="range" id="sliderW1" min="40" max="85" value="70" class="w-full" oninput="updateSimulator()">
+        </div>
+        <div class="bg-slate-950/70 p-3 rounded-lg border border-slate-800">
+          <div class="flex justify-between text-xs font-semibold text-slate-300 mb-1">
+            <span>Baseline Gain (vs. Normal)</span>
+            <span class="text-pink-400 font-bold" id="lblW2">15%</span>
+          </div>
+          <input type="range" id="sliderW2" min="5" max="40" value="15" class="w-full" oninput="updateSimulator()">
+        </div>
+        <div class="bg-slate-950/70 p-3 rounded-lg border border-slate-800">
+          <div class="flex justify-between text-xs font-semibold text-slate-300 mb-1">
+            <span>Match Consistency &amp; Tier</span>
+            <span class="text-pink-400 font-bold" id="lblW3">15%</span>
+          </div>
+          <input type="range" id="sliderW3" min="5" max="40" value="15" class="w-full" oninput="updateSimulator()">
+        </div>
+        <div class="bg-slate-950/70 p-3 rounded-lg border border-slate-800">
+          <div class="flex justify-between text-xs font-semibold text-slate-300 mb-1">
+            <span>Min High-Pressure Balls</span>
+            <span class="text-pink-400 font-bold" id="lblMinBalls">225 Balls</span>
+          </div>
+          <input type="range" id="sliderMinBalls" min="225" max="350" step="25" value="225" class="w-full" oninput="updateSimulator()">
+        </div>
+      </div>
+    </div>
+
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      <!-- Top 10 Batters -->
+      <div class="glass-card rounded-xl overflow-hidden shadow-xl">
+        <div class="p-4 bg-slate-900/90 border-b border-slate-800 flex flex-wrap items-center justify-between gap-2">
+          <div>
+            <h2 class="text-base font-extrabold text-white">Top 10 Batters Under Pressure (Official Order)</h2>
+            <p class="text-xs text-slate-400">Sorted by Pressure Reliability Rating (0–100) + RR IPL 2027 Role</p>
+          </div>
+          <button onclick="copyList('bat')" class="px-3 py-1.5 rounded-lg bg-pink-600 hover:bg-pink-500 text-white text-xs font-bold transition cursor-pointer">
+            Copy Top 10 Batters
+          </button>
+        </div>
+        <div class="overflow-x-auto">
+          <table class="w-full text-left border-collapse text-xs">
+            <thead>
+              <tr class="bg-slate-950/80 text-slate-400 border-b border-slate-800">
+                <th class="py-2.5 px-3">Rank</th>
+                <th class="py-2.5 px-3">Batter Name</th>
+                <th class="py-2.5 px-3 text-right">Rating</th>
+                <th class="py-2.5 px-3 text-right">Pressure SR (Gain)</th>
+                <th class="py-2.5 px-3">RR 2027 Role</th>
+              </tr>
+            </thead>
+            <tbody id="top10BatBody" class="divide-y divide-slate-800/70"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Top 10 Bowlers -->
+      <div class="glass-card rounded-xl overflow-hidden shadow-xl">
+        <div class="p-4 bg-slate-900/90 border-b border-slate-800 flex flex-wrap items-center justify-between gap-2">
+          <div>
+            <h2 class="text-base font-extrabold text-white">Top 10 Bowlers Under Pressure (Official Order)</h2>
+            <p class="text-xs text-slate-400">IPL-Eligible Bowlers Sorted by Rating + RR IPL 2027 Role</p>
+          </div>
+          <button onclick="copyList('bowl')" class="px-3 py-1.5 rounded-lg bg-blue-600 hover:bg-blue-500 text-white text-xs font-bold transition cursor-pointer">
+            Copy Top 10 Bowlers
+          </button>
+        </div>
+        <div class="overflow-x-auto">
+          <table class="w-full text-left border-collapse text-xs">
+            <thead>
+              <tr class="bg-slate-950/80 text-slate-400 border-b border-slate-800">
+                <th class="py-2.5 px-3">Rank</th>
+                <th class="py-2.5 px-3">Bowler Name</th>
+                <th class="py-2.5 px-3 text-right">Rating</th>
+                <th class="py-2.5 px-3 text-right">Econ (Saved) &amp; Wkts</th>
+                <th class="py-2.5 px-3">RR 2027 Role</th>
+              </tr>
+            </thead>
+            <tbody id="top10BowlBody" class="divide-y divide-slate-800/70"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- SECTION 2: 4 INTERACTIVE VISUAL CHARTS (IMMEDIATELY VISIBLE) -->
+  <section id="section-charts" class="space-y-4">
+    <div class="flex flex-wrap items-center justify-between gap-2">
+      <h2 class="text-lg font-extrabold text-white">Visual Evidence &amp; Data Patterns (4 Interactive Charts)</h2>
+      <span class="text-xs text-slate-400">Hover over any bar or data point for exact ball-by-ball metrics</span>
+    </div>
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      <div class="glass-card rounded-xl p-5">
+        <h3 class="text-sm font-bold text-slate-200 mb-3">1. Wicket Risk vs. Six-Hitting Rate Across Pressure Tiers</h3>
+        <div class="chart-wrapper"><canvas id="chartPressureTiers"></canvas></div>
+      </div>
+      <div class="glass-card rounded-xl p-5">
+        <h3 class="text-sm font-bold text-slate-200 mb-3">2. Death Overs (16 to 20) Six-Hitting &amp; Wicket Surge</h3>
+        <div class="chart-wrapper"><canvas id="chartDeathProgression"></canvas></div>
+      </div>
+      <div class="glass-card rounded-xl p-5">
+        <h3 class="text-sm font-bold text-slate-200 mb-3">3. Top 10 Batters: Normal Strike Rate vs. High-Pressure Strike Rate</h3>
+        <div class="chart-wrapper"><canvas id="chartTopBatters"></canvas></div>
+      </div>
+      <div class="glass-card rounded-xl p-5">
+        <h3 class="text-sm font-bold text-slate-200 mb-3">4. All 10 IPL Franchises: Death-Overs Six-Hitting Rate (%)</h3>
+        <div class="chart-wrapper"><canvas id="chartIplTeams"></canvas></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- SECTION 3: RAJASTHAN ROYALS IPL 2027 AUCTION BLUEPRINT & DATA HYGIENE -->
+  <section id="section-auction" class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+    <div class="glass-card rounded-xl p-5 space-y-3">
+      <h2 class="text-base font-extrabold text-pink-400">Rajasthan Royals IPL 2027 Auction Strategy</h2>
+      <p class="text-xs text-slate-300 leading-relaxed">
+        In our dataset analysis, Rajasthan Royals' death-over batting dropped by <strong>30%</strong> from <strong>824 runs (54 sixes)</strong> in IPL 2022 to <strong>563 runs (34 sixes)</strong> in IPL 2025 and <strong>611 runs (38 sixes)</strong> in IPL 2026, while death-over wickets fell from <strong>39 wickets</strong> to <strong>30 wickets</strong>.
+      </p>
+      <ul class="space-y-2 text-xs text-slate-200">
+        <li class="p-2.5 rounded-lg bg-slate-950/70 border border-slate-800">
+          <strong class="text-emerald-400">Middle-Order &amp; Leadership Target:</strong> <strong>Namboori Tilak Varma (#1)</strong>, <strong>Suryakumar Yadav (#2)</strong>, or <strong>Rishabh Pant (#4)</strong> bring +56 to +71.5 Strike Rate acceleration and calm chase control.
+        </li>
+        <li class="p-2.5 rounded-lg bg-slate-950/70 border border-slate-800">
+          <strong class="text-emerald-400">No. 6 Death Finisher Target:</strong> <strong>Tim David (#3, 93 pressure sixes)</strong> or <strong>Rinku Singh (#8, 1,129 pressure runs)</strong> bridges RR's 2.16% death-over six-rate gap behind #1 Punjab Kings.
+        </li>
+        <li class="p-2.5 rounded-lg bg-slate-950/70 border border-slate-800">
+          <strong class="text-amber-400">Death Pace &amp; Spin Spearheads:</strong> <strong>Jasprit Bumrah (#1, saves +3.00 runs/over)</strong>, <strong>Matheesha Pathirana (#4, 48 death wickets)</strong>, and <strong>Rashid Khan (#3) / Yuzvendra Chahal (#10)</strong> restore late-innings wicket pressure.
+        </li>
+      </ul>
+    </div>
+
+    <div class="glass-card rounded-xl p-5 space-y-3">
+      <h2 class="text-base font-extrabold text-blue-400">Three Data Cleaning &amp; Methodology Safeguards</h2>
+      <ul class="space-y-2 text-xs text-slate-200">
+        <li class="p-2.5 rounded-lg bg-slate-950/70 border border-slate-800">
+          <strong class="text-pink-400">1. Removed <code>extras1_runs</code> Lookup Code:</strong> In <code>ball_by_ball.csv</code>, <code>extras1_runs</code> is an integer category code for <code>extras_type</code> (<code>6 = No Extra</code>, <code>2 = Wide</code>, <code>3 = Leg Bye</code>). Removing it prevented <strong>1.16 million false runs</strong>.
+        </li>
+        <li class="p-2.5 rounded-lg bg-slate-950/70 border border-slate-800">
+          <strong class="text-pink-400">2. Separated Identical Names via Player ID:</strong> Grouped by <code>striker_id</code> and <code>bowler_id</code> so Afghanistan/GT's <strong>Rashid Khan (ID 4722)</strong> is never mixed with Nepal's <strong>Rashid Khan (ID 20172)</strong>.
+        </li>
+        <li class="p-2.5 rounded-lg bg-slate-950/70 border border-slate-800">
+          <strong class="text-pink-400">3. IPL-Active Eligibility &amp; Over Par Adjustment:</strong> Every player is benchmarked against Over × Format Par and their own Normal Baseline (<code>Score &lt; 60</code>), with <strong>0.99 Spearman rank stability</strong>.
+        </li>
+      </ul>
+    </div>
+  </section>
+
+  <!-- SECTION 4: ALL 39 ELIGIBLE BATTERS EXPLORER -->
+  <section id="section-batters" class="glass-card rounded-xl overflow-hidden shadow-xl">
+    <div class="p-4 bg-slate-900/90 border-b border-slate-800 flex flex-col md:flex-row md:items-center md:justify-between gap-3">
+      <div>
+        <h2 class="text-base font-extrabold text-white">All 39 Eligible Batters Explorer (≥225 High-Pressure Balls)</h2>
+        <p class="text-xs text-slate-400">Filter by name or IPL/International team and sort by any pressure metric</p>
+      </div>
+      <div class="flex flex-wrap gap-2">
+        <input type="text" id="searchBat" placeholder="Search batter or team..." class="px-3 py-1.5 rounded-lg bg-slate-950 border border-slate-700 text-xs text-white focus:outline-none focus:border-pink-500" oninput="renderFullBatters()">
+        <select id="sortBat" class="px-3 py-1.5 rounded-lg bg-slate-950 border border-slate-700 text-xs text-white focus:outline-none focus:border-pink-500" onchange="renderFullBatters()">
+          <option value="pressure_rating">Sort: Pressure Rating</option>
+          <option value="hp_sr">Sort: Pressure Strike Rate</option>
+          <option value="sr_delta_hp_vs_us">Sort: Strike Rate Gain</option>
+          <option value="hp_6s">Sort: Pressure Sixes</option>
+          <option value="hp_runs">Sort: Pressure Runs</option>
+          <option value="hp_consistency_pct">Sort: Consistency %</option>
+        </select>
+      </div>
+    </div>
+    <div class="overflow-x-auto max-h-96">
+      <table class="w-full text-left border-collapse text-xs">
+        <thead class="sticky top-0 bg-slate-950 text-slate-400 border-b border-slate-800">
+          <tr>
+            <th class="py-2.5 px-3">Rank</th>
+            <th class="py-2.5 px-3">Batter Name (ID)</th>
+            <th class="py-2.5 px-3 text-right">Rating</th>
+            <th class="py-2.5 px-3 text-right">Inn (Balls)</th>
+            <th class="py-2.5 px-3 text-right">Runs</th>
+            <th class="py-2.5 px-3 text-right">Normal SR</th>
+            <th class="py-2.5 px-3 text-right">Pressure SR</th>
+            <th class="py-2.5 px-3 text-right">SR Gain</th>
+            <th class="py-2.5 px-3 text-right">Sixes</th>
+            <th class="py-2.5 px-3 text-right">Dot %</th>
+            <th class="py-2.5 px-3 text-right">Consistency</th>
+          </tr>
+        </thead>
+        <tbody id="fullBatBody" class="divide-y divide-slate-800/70"></tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- SECTION 5: ALL 60 ELIGIBLE BOWLERS EXPLORER -->
+  <section id="section-bowlers" class="glass-card rounded-xl overflow-hidden shadow-xl">
+    <div class="p-4 bg-slate-900/90 border-b border-slate-800 flex flex-col md:flex-row md:items-center md:justify-between gap-3">
+      <div>
+        <h2 class="text-base font-extrabold text-white">All 60 Eligible Bowlers Explorer (≥225 High-Pressure Balls)</h2>
+        <p class="text-xs text-slate-400">Filter by bowler or team and sort by runs saved, wickets, or rating</p>
+      </div>
+      <div class="flex flex-wrap gap-2">
+        <input type="text" id="searchBowl" placeholder="Search bowler or team..." class="px-3 py-1.5 rounded-lg bg-slate-950 border border-slate-700 text-xs text-white focus:outline-none focus:border-blue-500" oninput="renderFullBowlers()">
+        <select id="sortBowl" class="px-3 py-1.5 rounded-lg bg-slate-950 border border-slate-700 text-xs text-white focus:outline-none focus:border-blue-500" onchange="renderFullBowlers()">
+          <option value="pressure_rating">Sort: Pressure Rating</option>
+          <option value="hp_econ_saved">Sort: Runs Saved vs. Par</option>
+          <option value="hp_wkts">Sort: Pressure Wickets</option>
+          <option value="hp_dot_pct">Sort: Dot Ball %</option>
+          <option value="hp_consistency_pct">Sort: Consistency %</option>
+        </select>
+      </div>
+    </div>
+    <div class="overflow-x-auto max-h-96">
+      <table class="w-full text-left border-collapse text-xs">
+        <thead class="sticky top-0 bg-slate-950 text-slate-400 border-b border-slate-800">
+          <tr>
+            <th class="py-2.5 px-3">Rank</th>
+            <th class="py-2.5 px-3">Bowler Name (ID)</th>
+            <th class="py-2.5 px-3 text-right">Rating</th>
+            <th class="py-2.5 px-3 text-right">Inn (Balls)</th>
+            <th class="py-2.5 px-3 text-right">Wickets</th>
+            <th class="py-2.5 px-3 text-right">Normal Econ</th>
+            <th class="py-2.5 px-3 text-right">Pressure Econ</th>
+            <th class="py-2.5 px-3 text-right">Saved vs. Par</th>
+            <th class="py-2.5 px-3 text-right">Normal SR</th>
+            <th class="py-2.5 px-3 text-right">Pressure SR</th>
+            <th class="py-2.5 px-3 text-right">Consistency</th>
+          </tr>
+        </thead>
+        <tbody id="fullBowlBody" class="divide-y divide-slate-800/70"></tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- SECTION 6: ALL 10 IPL FRANCHISES IN DEATH OVERS -->
+  <section id="section-death" class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+    <div class="glass-card rounded-xl overflow-hidden shadow-xl">
+      <div class="p-4 bg-slate-900/90 border-b border-slate-800">
+        <h2 class="text-base font-extrabold text-white">All 10 IPL Franchises in Death Overs (Overs 16 to 20)</h2>
+        <p class="text-xs text-slate-400">Rajasthan Royals highlighted in pink (#5 overall at 10.43% six-hitting rate)</p>
+      </div>
+      <div class="overflow-x-auto">
+        <table class="w-full text-left border-collapse text-xs">
+          <thead>
+            <tr class="bg-slate-950/80 text-slate-400 border-b border-slate-800">
+              <th class="py-2.5 px-3">Rank</th>
+              <th class="py-2.5 px-3">IPL Franchise</th>
+              <th class="py-2.5 px-3 text-right">Matches</th>
+              <th class="py-2.5 px-3 text-right">Balls</th>
+              <th class="py-2.5 px-3 text-right">Sixes</th>
+              <th class="py-2.5 px-3 text-right">Death SR</th>
+              <th class="py-2.5 px-3 text-right">Six Rate %</th>
+            </tr>
+          </thead>
+          <tbody id="deathTeamsBody" class="divide-y divide-slate-800/70"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="glass-card rounded-xl overflow-hidden shadow-xl">
+      <div class="p-4 bg-slate-900/90 border-b border-slate-800">
+        <h2 class="text-base font-extrabold text-white">Top Individual Finishers in Death Overs (Overs 16 to 20)</h2>
+        <p class="text-xs text-slate-400">Ranked by Death Six Impact Score across Overs 16 to 20</p>
+      </div>
+      <div class="overflow-x-auto max-h-96">
+        <table class="w-full text-left border-collapse text-xs">
+          <thead class="sticky top-0 bg-slate-950 text-slate-400 border-b border-slate-800">
+            <tr>
+              <th class="py-2.5 px-3">Rank</th>
+              <th class="py-2.5 px-3">Player Name</th>
+              <th class="py-2.5 px-3 text-right">Inn (Balls)</th>
+              <th class="py-2.5 px-3 text-right">Runs</th>
+              <th class="py-2.5 px-3 text-right">Sixes</th>
+              <th class="py-2.5 px-3 text-right">Death SR</th>
+              <th class="py-2.5 px-3 text-right">Six %</th>
+            </tr>
+          </thead>
+          <tbody id="deathPlayersBody" class="divide-y divide-slate-800/70"></tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<div id="toastMsg" class="fixed bottom-5 right-5 bg-emerald-500 text-slate-950 font-extrabold text-xs px-4 py-3 rounded-lg shadow-2xl hidden z-50">
+  Copied to clipboard!
+</div>
+
+<script>
+const BATTERS = [{"rank": 1, "striker_id": 7897, "player_name": "Namboori Tilak Varma", "teams": "India, India A, Mumbai Indians", "pressure_rating": 72.42, "score_hp_excellence": 71.03, "vol_factor": 81.19, "score_baseline_elevation": 72.35, "score_consistency": 62.04, "hp_innings": 57, "hp_balls": 533, "hp_runs": 1052, "hp_sr": 197.37, "us_sr": 128.36, "sr_delta_hp_vs_us": 69.02, "hp_6s": 75, "hp_4s": 73, "hp_bdry_pct": 27.77, "hp_dot_pct": 24.58, "hp_rax_per_100": 50.27, "hp_consistency_pct": 78.05, "hp_elite_share": 0.96, "rr_role": "No. 3/4 Left-Handed Anchor & Chase Finisher"}, {"rank": 2, "striker_id": 1699, "player_name": "Suryakumar Yadav", "teams": "India, Mumbai Indians", "pressure_rating": 71.14, "score_hp_excellence": 74.67, "vol_factor": 73.88, "score_baseline_elevation": 61.14, "score_consistency": 65.97, "hp_innings": 39, "hp_balls": 344, "hp_runs": 741, "hp_sr": 215.41, "us_sr": 159.45, "sr_delta_hp_vs_us": 55.95, "hp_6s": 58, "hp_4s": 59, "hp_bdry_pct": 34.01, "hp_dot_pct": 29.07, "hp_rax_per_100": 54.64, "hp_consistency_pct": 81.48, "hp_elite_share": 0.94, "rr_role": "No. 3/4 360\u00b0 Spin & Pace Match-Winner"}, {"rank": 3, "striker_id": 6396, "player_name": "Tim David", "teams": "Australia, Mumbai Indians, Royal Challengers Bengaluru", "pressure_rating": 70.11, "score_hp_excellence": 70.19, "vol_factor": 82.2, "score_baseline_elevation": 55.0, "score_consistency": 64.86, "hp_innings": 58, "hp_balls": 580, "hp_runs": 1143, "hp_sr": 197.07, "us_sr": 160.22, "sr_delta_hp_vs_us": 36.85, "hp_6s": 93, "hp_4s": 70, "hp_bdry_pct": 28.1, "hp_dot_pct": 28.97, "hp_rax_per_100": 48.66, "hp_consistency_pct": 75.0, "hp_elite_share": 0.99, "rr_role": "No. 6 Power Finisher (Fixes RR Death Sixes)"}, {"rank": 4, "striker_id": 4703, "player_name": "Rishabh Pant", "teams": "Delhi Capitals, India, Lucknow Super Giants", "pressure_rating": 70.05, "score_hp_excellence": 68.79, "vol_factor": 66.88, "score_baseline_elevation": 77.85, "score_consistency": 71.29, "hp_innings": 24, "hp_balls": 230, "hp_runs": 463, "hp_sr": 201.3, "us_sr": 129.8, "sr_delta_hp_vs_us": 71.5, "hp_6s": 31, "hp_4s": 40, "hp_bdry_pct": 30.87, "hp_dot_pct": 26.96, "hp_rax_per_100": 55.93, "hp_consistency_pct": 83.33, "hp_elite_share": 1.0, "rr_role": "Wicketkeeper-Captain & No. 4 Clutch Hitter"}, {"rank": 5, "striker_id": 4391, "player_name": "Liam Livingstone", "teams": "England, Punjab Kings, Royal Challengers Bengaluru, Sunrisers Hyderabad", "pressure_rating": 63.3, "score_hp_excellence": 65.57, "vol_factor": 58.98, "score_baseline_elevation": 69.35, "score_consistency": 57.67, "hp_innings": 32, "hp_balls": 278, "hp_runs": 551, "hp_sr": 198.2, "us_sr": 136.73, "sr_delta_hp_vs_us": 61.47, "hp_6s": 50, "hp_4s": 27, "hp_bdry_pct": 27.7, "hp_dot_pct": 29.5, "hp_rax_per_100": 31.71, "hp_consistency_pct": 69.23, "hp_elite_share": 1.0, "rr_role": "No. 5/6 Power Finisher + Spin Bowling Option"}, {"rank": 6, "striker_id": 4986, "player_name": "Rovman Powell", "teams": "Delhi Capitals, Kolkata Knight Riders, Rajasthan Royals, West Indies", "pressure_rating": 62.38, "score_hp_excellence": 59.96, "vol_factor": 68.31, "score_baseline_elevation": 65.15, "score_consistency": 57.0, "hp_innings": 57, "hp_balls": 580, "hp_runs": 1063, "hp_sr": 183.28, "us_sr": 125.13, "sr_delta_hp_vs_us": 58.15, "hp_6s": 85, "hp_4s": 64, "hp_bdry_pct": 25.69, "hp_dot_pct": 30.86, "hp_rax_per_100": 28.08, "hp_consistency_pct": 72.09, "hp_elite_share": 1.0, "rr_role": "No. 6 Pace-Hitter (85 Pressure Sixes)"}, {"rank": 7, "striker_id": 4260, "player_name": "Heinrich Klaasen", "teams": "South Africa, Sunrisers Hyderabad", "pressure_rating": 61.21, "score_hp_excellence": 65.21, "vol_factor": 61.99, "score_baseline_elevation": 49.75, "score_consistency": 59.36, "hp_innings": 40, "hp_balls": 418, "hp_runs": 811, "hp_sr": 194.02, "us_sr": 155.36, "sr_delta_hp_vs_us": 38.66, "hp_6s": 58, "hp_4s": 50, "hp_bdry_pct": 25.84, "hp_dot_pct": 22.01, "hp_rax_per_100": 26.5, "hp_consistency_pct": 64.52, "hp_elite_share": 1.0, "rr_role": "Wicketkeeper Middle-Overs Spin Basher"}, {"rank": 8, "striker_id": 4708, "player_name": "Rinku Singh", "teams": "India, Kolkata Knight Riders", "pressure_rating": 60.78, "score_hp_excellence": 58.72, "vol_factor": 68.17, "score_baseline_elevation": 65.84, "score_consistency": 49.57, "hp_innings": 58, "hp_balls": 610, "hp_runs": 1129, "hp_sr": 185.08, "us_sr": 123.41, "sr_delta_hp_vs_us": 61.67, "hp_6s": 73, "hp_4s": 94, "hp_bdry_pct": 27.38, "hp_dot_pct": 29.51, "hp_rax_per_100": 26.56, "hp_consistency_pct": 56.0, "hp_elite_share": 1.0, "rr_role": "No. 5/6 Left-Handed Late-Chase Finisher"}, {"rank": 9, "striker_id": 3647, "player_name": "Shreyas Iyer", "teams": "India, Kolkata Knight Riders, Punjab Kings", "pressure_rating": 60.73, "score_hp_excellence": 65.13, "vol_factor": 57.05, "score_baseline_elevation": 56.33, "score_consistency": 58.06, "hp_innings": 28, "hp_balls": 241, "hp_runs": 468, "hp_sr": 194.19, "us_sr": 147.04, "sr_delta_hp_vs_us": 47.15, "hp_6s": 33, "hp_4s": 30, "hp_bdry_pct": 26.14, "hp_dot_pct": 21.58, "hp_rax_per_100": 31.48, "hp_consistency_pct": 68.18, "hp_elite_share": 1.0, "rr_role": "No. 3/4 Stabilizer & Captaincy Option"}, {"rank": 10, "striker_id": 20702, "player_name": "Tristan Stubbs", "teams": "Delhi Capitals, Mumbai Indians, South Africa", "pressure_rating": 59.17, "score_hp_excellence": 58.18, "vol_factor": 58.23, "score_baseline_elevation": 57.56, "score_consistency": 65.29, "hp_innings": 41, "hp_balls": 396, "hp_runs": 729, "hp_sr": 184.09, "us_sr": 130.17, "sr_delta_hp_vs_us": 53.92, "hp_6s": 37, "hp_4s": 66, "hp_bdry_pct": 26.01, "hp_dot_pct": 22.47, "hp_rax_per_100": 21.16, "hp_consistency_pct": 75.86, "hp_elite_share": 1.0, "rr_role": "Young Overseas Finisher & Off-Spinner"}, {"rank": 11, "striker_id": 813, "player_name": "Jos Buttler", "teams": "England, Gujarat Titans, Rajasthan Royals", "pressure_rating": 56.89, "score_hp_excellence": 60.12, "vol_factor": 54.13, "score_baseline_elevation": 46.99, "score_consistency": 61.74, "hp_innings": 28, "hp_balls": 265, "hp_runs": 514, "hp_sr": 193.96, "us_sr": 151.4, "sr_delta_hp_vs_us": 42.56, "hp_6s": 29, "hp_4s": 47, "hp_bdry_pct": 28.68, "hp_dot_pct": 24.91, "hp_rax_per_100": 22.45, "hp_consistency_pct": 70.0, "hp_elite_share": 1.0, "rr_role": "Middle/Death Impact Batter"}, {"rank": 12, "striker_id": 2756, "player_name": "Shashank Singh", "teams": "Punjab Kings, Sunrisers Hyderabad", "pressure_rating": 56.52, "score_hp_excellence": 56.99, "vol_factor": 54.55, "score_baseline_elevation": 56.5, "score_consistency": 58.44, "hp_innings": 31, "hp_balls": 285, "hp_runs": 511, "hp_sr": 179.3, "us_sr": 143.27, "sr_delta_hp_vs_us": 36.03, "hp_6s": 31, "hp_4s": 38, "hp_bdry_pct": 24.21, "hp_dot_pct": 24.56, "hp_rax_per_100": 21.64, "hp_consistency_pct": 61.9, "hp_elite_share": 1.0, "rr_role": "Middle/Death Impact Batter"}, {"rank": 13, "striker_id": 3916, "player_name": "Jitesh Sharma", "teams": "India, India A, Punjab Kings, Royal Challengers Bengaluru", "pressure_rating": 54.35, "score_hp_excellence": 51.68, "vol_factor": 49.87, "score_baseline_elevation": 58.86, "score_consistency": 65.3, "hp_innings": 36, "hp_balls": 322, "hp_runs": 579, "hp_sr": 179.81, "us_sr": 141.36, "sr_delta_hp_vs_us": 38.45, "hp_6s": 39, "hp_4s": 45, "hp_bdry_pct": 26.09, "hp_dot_pct": 32.61, "hp_rax_per_100": 9.58, "hp_consistency_pct": 76.92, "hp_elite_share": 0.93, "rr_role": "Middle/Death Impact Batter"}, {"rank": 14, "striker_id": 143, "player_name": "Dinesh Karthik", "teams": "India, Royal Challengers Bengaluru", "pressure_rating": 53.98, "score_hp_excellence": 53.81, "vol_factor": 55.92, "score_baseline_elevation": 53.72, "score_consistency": 51.48, "hp_innings": 51, "hp_balls": 466, "hp_runs": 841, "hp_sr": 180.47, "us_sr": 131.79, "sr_delta_hp_vs_us": 48.68, "hp_6s": 52, "hp_4s": 74, "hp_bdry_pct": 27.04, "hp_dot_pct": 29.4, "hp_rax_per_100": 13.75, "hp_consistency_pct": 57.5, "hp_elite_share": 1.0, "rr_role": "Middle/Death Impact Batter"}, {"rank": 15, "striker_id": 3125, "player_name": "Nicholas Pooran", "teams": "Lucknow Super Giants, Sunrisers Hyderabad, West Indies", "pressure_rating": 53.76, "score_hp_excellence": 55.26, "vol_factor": 51.08, "score_baseline_elevation": 46.54, "score_consistency": 60.93, "hp_innings": 40, "hp_balls": 388, "hp_runs": 728, "hp_sr": 187.63, "us_sr": 149.53, "sr_delta_hp_vs_us": 38.1, "hp_6s": 53, "hp_4s": 56, "hp_bdry_pct": 28.09, "hp_dot_pct": 30.93, "hp_rax_per_100": 8.7, "hp_consistency_pct": 67.74, "hp_elite_share": 1.0, "rr_role": "Middle/Death Impact Batter"}, {"rank": 16, "striker_id": 7260, "player_name": "Dhruv Jurel", "teams": "India, Rajasthan Royals", "pressure_rating": 53.17, "score_hp_excellence": 53.35, "vol_factor": 45.9, "score_baseline_elevation": 51.73, "score_consistency": 66.14, "hp_innings": 27, "hp_balls": 247, "hp_runs": 437, "hp_sr": 176.92, "us_sr": 139.75, "sr_delta_hp_vs_us": 37.18, "hp_6s": 27, "hp_4s": 31, "hp_bdry_pct": 23.48, "hp_dot_pct": 23.89, "hp_rax_per_100": 5.48, "hp_consistency_pct": 72.22, "hp_elite_share": 1.0, "rr_role": "Middle/Death Impact Batter"}, {"rank": 17, "striker_id": 1318, "player_name": "Andre Russell", "teams": "Kolkata Knight Riders, West Indies", "pressure_rating": 53.09, "score_hp_excellence": 52.7, "vol_factor": 57.63, "score_baseline_elevation": 43.57, "score_consistency": 56.25, "hp_innings": 41, "hp_balls": 411, "hp_runs": 741, "hp_sr": 180.29, "us_sr": 159.32, "sr_delta_hp_vs_us": 20.98, "hp_6s": 67, "hp_4s": 50, "hp_bdry_pct": 28.47, "hp_dot_pct": 42.09, "hp_rax_per_100": 19.26, "hp_consistency_pct": 63.33, "hp_elite_share": 1.0, "rr_role": "Middle/Death Impact Batter"}, {"rank": 18, "striker_id": 2639, "player_name": "Marcus Stoinis", "teams": "Australia, Lucknow Super Giants, Punjab Kings", "pressure_rating": 52.14, "score_hp_excellence": 54.88, "vol_factor": 51.29, "score_baseline_elevation": 49.19, "score_consistency": 48.28, "hp_innings": 40, "hp_balls": 366, "hp_runs": 667, "hp_sr": 182.24, "us_sr": 141.66, "sr_delta_hp_vs_us": 40.58, "hp_6s": 49, "hp_4s": 47, "hp_bdry_pct": 26.23, "hp_dot_pct": 29.23, "hp_rax_per_100": 10.08, "hp_consistency_pct": 53.57, "hp_elite_share": 0.97, "rr_role": "Middle/Death Impact Batter"}, {"rank": 19, "striker_id": 1077, "player_name": "David Miller", "teams": "Delhi Capitals, Gujarat Titans, Lucknow Super Giants, South Africa", "pressure_rating": 51.8, "score_hp_excellence": 51.6, "vol_factor": 52.59, "score_baseline_elevation": 47.08, "score_consistency": 55.83, "hp_innings": 51, "hp_balls": 456, "hp_runs": 782, "hp_sr": 171.49, "us_sr": 137.01, "sr_delta_hp_vs_us": 34.48, "hp_6s": 49, "hp_4s": 54, "hp_bdry_pct": 22.59, "hp_dot_pct": 26.32, "hp_rax_per_100": 8.6, "hp_consistency_pct": 62.16, "hp_elite_share": 1.0, "rr_role": "Middle/Death Impact Batter"}, {"rank": 20, "striker_id": 6726, "player_name": "Romario Shepherd", "teams": "Lucknow Super Giants, Mumbai Indians, Royal Challengers Bengaluru, Sunrisers Hyderabad, West Indies", "pressure_rating": 50.17, "score_hp_excellence": 48.05, "vol_factor": 57.94, "score_baseline_elevation": 50.48, "score_consistency": 43.26, "hp_innings": 55, "hp_balls": 510, "hp_runs": 837, "hp_sr": 164.12, "us_sr": 125.42, "sr_delta_hp_vs_us": 38.69, "hp_6s": 67, "hp_4s": 49, "hp_bdry_pct": 22.75, "hp_dot_pct": 37.25, "hp_rax_per_100": 15.23, "hp_consistency_pct": 56.41, "hp_elite_share": 1.0, "rr_role": "Middle/Death Impact Batter"}, {"rank": 21, "striker_id": 1107, "player_name": "Mohammad Nabi", "teams": "Afghanistan, Kolkata Knight Riders, Mumbai Indians", "pressure_rating": 49.58, "score_hp_excellence": 47.72, "vol_factor": 46.43, "score_baseline_elevation": 64.51, "score_consistency": 45.44, "hp_innings": 34, "hp_balls": 247, "hp_runs": 410, "hp_sr": 165.99, "us_sr": 108.65, "sr_delta_hp_vs_us": 57.34, "hp_6s": 27, "hp_4s": 29, "hp_bdry_pct": 22.67, "hp_dot_pct": 31.58, "hp_rax_per_100": 6.68, "hp_consistency_pct": 61.9, "hp_elite_share": 1.0, "rr_role": "Middle/Death Impact Batter"}, {"rank": 22, "striker_id": 3330, "player_name": "Hardik Pandya", "teams": "Gujarat Titans, India, Mumbai Indians", "pressure_rating": 48.87, "score_hp_excellence": 46.96, "vol_factor": 53.66, "score_baseline_elevation": 48.68, "score_consistency": 46.83, "hp_innings": 65, "hp_balls": 637, "hp_runs": 1055, "hp_sr": 165.62, "us_sr": 129.76, "sr_delta_hp_vs_us": 35.86, "hp_6s": 61, "hp_4s": 80, "hp_bdry_pct": 22.14, "hp_dot_pct": 29.36, "hp_rax_per_100": 4.94, "hp_consistency_pct": 55.77, "hp_elite_share": 1.0, "rr_role": "Middle/Death Impact Batter"}, {"rank": 23, "striker_id": 4106, "player_name": "Daryl Mitchell", "teams": "Chennai Super Kings, New Zealand, Rajasthan Royals", "pressure_rating": 48.24, "score_hp_excellence": 50.6, "vol_factor": 47.97, "score_baseline_elevation": 44.0, "score_consistency": 45.89, "hp_innings": 29, "hp_balls": 259, "hp_runs": 436, "hp_sr": 168.34, "us_sr": 138.27, "sr_delta_hp_vs_us": 30.07, "hp_6s": 20, "hp_4s": 33, "hp_bdry_pct": 20.46, "hp_dot_pct": 23.17, "hp_rax_per_100": 9.34, "hp_consistency_pct": 60.87, "hp_elite_share": 1.0, "rr_role": "Middle/Death Impact Batter"}, {"rank": 24, "striker_id": 6725, "player_name": "Sherfane Rutherford", "teams": "Gujarat Titans, Kolkata Knight Riders, Mumbai Indians, Royal Challengers Bengaluru, West Indies", "pressure_rating": 47.93, "score_hp_excellence": 48.47, "vol_factor": 48.59, "score_baseline_elevation": 50.29, "score_consistency": 42.83, "hp_innings": 29, "hp_balls": 287, "hp_runs": 488, "hp_sr": 170.03, "us_sr": 138.42, "sr_delta_hp_vs_us": 31.62, "hp_6s": 32, "hp_4s": 39, "hp_bdry_pct": 24.74, "hp_dot_pct": 33.1, "hp_rax_per_100": 8.92, "hp_consistency_pct": 52.38, "hp_elite_share": 1.0, "rr_role": "Middle/Death Impact Batter"}, {"rank": 25, "striker_id": 4755, "player_name": "Shivam Dube", "teams": "Chennai Super Kings, India", "pressure_rating": 46.16, "score_hp_excellence": 47.44, "vol_factor": 47.24, "score_baseline_elevation": 35.5, "score_consistency": 51.17, "hp_innings": 58, "hp_balls": 490, "hp_runs": 828, "hp_sr": 168.98, "us_sr": 147.25, "sr_delta_hp_vs_us": 21.73, "hp_6s": 57, "hp_4s": 56, "hp_bdry_pct": 23.06, "hp_dot_pct": 30.41, "hp_rax_per_100": -1.21, "hp_consistency_pct": 56.76, "hp_elite_share": 1.0, "rr_role": "Middle/Death Impact Batter"}, {"rank": 26, "striker_id": 2633, "player_name": "Jason Holder", "teams": "Gujarat Titans, Lucknow Super Giants, Rajasthan Royals, West Indies", "pressure_rating": 45.76, "score_hp_excellence": 45.3, "vol_factor": 38.35, "score_baseline_elevation": 71.73, "score_consistency": 33.48, "hp_innings": 43, "hp_balls": 256, "hp_runs": 429, "hp_sr": 167.58, "us_sr": 108.38, "sr_delta_hp_vs_us": 59.2, "hp_6s": 34, "hp_4s": 22, "hp_bdry_pct": 21.88, "hp_dot_pct": 32.42, "hp_rax_per_100": -11.89, "hp_consistency_pct": 43.48, "hp_elite_share": 0.97, "rr_role": "Middle/Death Impact Batter"}, {"rank": 27, "striker_id": 3926, "player_name": "Rahul Tewatia", "teams": "Gujarat Titans", "pressure_rating": 45.15, "score_hp_excellence": 42.67, "vol_factor": 41.54, "score_baseline_elevation": 57.37, "score_consistency": 46.35, "hp_innings": 51, "hp_balls": 366, "hp_runs": 610, "hp_sr": 166.67, "us_sr": 108.23, "sr_delta_hp_vs_us": 58.44, "hp_6s": 35, "hp_4s": 55, "hp_bdry_pct": 24.59, "hp_dot_pct": 33.33, "hp_rax_per_100": -8.11, "hp_consistency_pct": 46.15, "hp_elite_share": 1.0, "rr_role": "Middle/Death Impact Batter"}, {"rank": 28, "striker_id": 4409, "player_name": "Sam Curran", "teams": "Chennai Super Kings, England, Punjab Kings, Rajasthan Royals", "pressure_rating": 44.0, "score_hp_excellence": 42.03, "vol_factor": 43.21, "score_baseline_elevation": 50.53, "score_consistency": 44.71, "hp_innings": 35, "hp_balls": 304, "hp_runs": 476, "hp_sr": 156.58, "us_sr": 116.61, "sr_delta_hp_vs_us": 39.97, "hp_6s": 26, "hp_4s": 32, "hp_bdry_pct": 19.08, "hp_dot_pct": 31.25, "hp_rax_per_100": -3.03, "hp_consistency_pct": 54.17, "hp_elite_share": 1.0, "rr_role": "Middle/Death Impact Batter"}, {"rank": 29, "striker_id": 6676, "player_name": "Azmatullah Omarzai", "teams": "Afghanistan, Gujarat Titans, Punjab Kings", "pressure_rating": 42.66, "score_hp_excellence": 41.77, "vol_factor": 41.64, "score_baseline_elevation": 50.22, "score_consistency": 39.47, "hp_innings": 34, "hp_balls": 285, "hp_runs": 443, "hp_sr": 155.44, "us_sr": 123.68, "sr_delta_hp_vs_us": 31.75, "hp_6s": 34, "hp_4s": 23, "hp_bdry_pct": 20.0, "hp_dot_pct": 35.09, "hp_rax_per_100": -5.63, "hp_consistency_pct": 56.52, "hp_elite_share": 0.88, "rr_role": "Middle/Death Impact Batter"}, {"rank": 30, "striker_id": 6460, "player_name": "Ayush Badoni", "teams": "India A, Lucknow Super Giants", "pressure_rating": 42.44, "score_hp_excellence": 42.32, "vol_factor": 39.81, "score_baseline_elevation": 46.21, "score_consistency": 43.4, "hp_innings": 37, "hp_balls": 342, "hp_runs": 554, "hp_sr": 161.99, "us_sr": 129.26, "sr_delta_hp_vs_us": 32.72, "hp_6s": 24, "hp_4s": 47, "hp_bdry_pct": 20.76, "hp_dot_pct": 26.9, "hp_rax_per_100": -10.85, "hp_consistency_pct": 42.31, "hp_elite_share": 1.0, "rr_role": "Middle/Death Impact Batter"}, {"rank": 31, "striker_id": 152, "player_name": "Ravindra Jadeja", "teams": "Chennai Super Kings, India, Rajasthan Royals", "pressure_rating": 41.44, "score_hp_excellence": 38.99, "vol_factor": 40.68, "score_baseline_elevation": 44.86, "score_consistency": 46.62, "hp_innings": 51, "hp_balls": 510, "hp_runs": 770, "hp_sr": 150.98, "us_sr": 116.96, "sr_delta_hp_vs_us": 34.02, "hp_6s": 32, "hp_4s": 56, "hp_bdry_pct": 17.25, "hp_dot_pct": 25.29, "hp_rax_per_100": -12.03, "hp_consistency_pct": 48.72, "hp_elite_share": 1.0, "rr_role": "Middle/Death Impact Batter"}, {"rank": 32, "striker_id": 3297, "player_name": "Shimron Hetmyer", "teams": "Rajasthan Royals, West Indies", "pressure_rating": 39.67, "score_hp_excellence": 41.13, "vol_factor": 40.57, "score_baseline_elevation": 29.28, "score_consistency": 44.19, "hp_innings": 57, "hp_balls": 527, "hp_runs": 848, "hp_sr": 160.91, "us_sr": 144.88, "sr_delta_hp_vs_us": 16.04, "hp_6s": 58, "hp_4s": 53, "hp_bdry_pct": 21.06, "hp_dot_pct": 33.02, "hp_rax_per_100": -12.42, "hp_consistency_pct": 46.81, "hp_elite_share": 1.0, "rr_role": "Middle/Death Impact Batter"}, {"rank": 33, "striker_id": 2436, "player_name": "Dasun Shanaka", "teams": "Gujarat Titans, Rajasthan Royals, Sri Lanka", "pressure_rating": 38.46, "score_hp_excellence": 37.83, "vol_factor": 36.19, "score_baseline_elevation": 44.54, "score_consistency": 38.05, "hp_innings": 41, "hp_balls": 350, "hp_runs": 558, "hp_sr": 159.43, "us_sr": 122.25, "sr_delta_hp_vs_us": 37.18, "hp_6s": 31, "hp_4s": 49, "hp_bdry_pct": 22.86, "hp_dot_pct": 34.57, "hp_rax_per_100": -17.93, "hp_consistency_pct": 51.85, "hp_elite_share": 0.99, "rr_role": "Middle/Death Impact Batter"}, {"rank": 34, "striker_id": 6423, "player_name": "Riyan Parag", "teams": "India, Rajasthan Royals", "pressure_rating": 37.8, "score_hp_excellence": 41.05, "vol_factor": 33.56, "score_baseline_elevation": 31.79, "score_consistency": 41.1, "hp_innings": 36, "hp_balls": 259, "hp_runs": 426, "hp_sr": 164.48, "us_sr": 147.52, "sr_delta_hp_vs_us": 16.96, "hp_6s": 29, "hp_4s": 29, "hp_bdry_pct": 22.39, "hp_dot_pct": 32.43, "hp_rax_per_100": -22.6, "hp_consistency_pct": 40.91, "hp_elite_share": 1.0, "rr_role": "Middle/Death Impact Batter"}, {"rank": 35, "striker_id": 4101, "player_name": "Mitchell Santner", "teams": "Chennai Super Kings, Mumbai Indians, New Zealand", "pressure_rating": 35.98, "score_hp_excellence": 30.5, "vol_factor": 38.01, "score_baseline_elevation": 46.65, "score_consistency": 38.38, "hp_innings": 43, "hp_balls": 314, "hp_runs": 428, "hp_sr": 136.31, "us_sr": 111.95, "sr_delta_hp_vs_us": 24.36, "hp_6s": 17, "hp_4s": 40, "hp_bdry_pct": 18.15, "hp_dot_pct": 36.62, "hp_rax_per_100": -13.85, "hp_consistency_pct": 52.17, "hp_elite_share": 0.94, "rr_role": "Middle/Death Impact Batter"}, {"rank": 36, "striker_id": 2876, "player_name": "Axar Patel", "teams": "Delhi Capitals, India", "pressure_rating": 35.39, "score_hp_excellence": 34.78, "vol_factor": 33.88, "score_baseline_elevation": 36.66, "score_consistency": 38.48, "hp_innings": 71, "hp_balls": 551, "hp_runs": 817, "hp_sr": 148.28, "us_sr": 129.67, "sr_delta_hp_vs_us": 18.61, "hp_6s": 42, "hp_4s": 52, "hp_bdry_pct": 17.06, "hp_dot_pct": 29.22, "hp_rax_per_100": -22.86, "hp_consistency_pct": 44.23, "hp_elite_share": 1.0, "rr_role": "Middle/Death Impact Batter"}, {"rank": 37, "striker_id": 2490, "player_name": "Mohammad Nawaz", "teams": "Pakistan", "pressure_rating": 34.43, "score_hp_excellence": 34.23, "vol_factor": 37.63, "score_baseline_elevation": 27.57, "score_consistency": 36.57, "hp_innings": 39, "hp_balls": 325, "hp_runs": 467, "hp_sr": 143.69, "us_sr": 138.37, "sr_delta_hp_vs_us": 5.32, "hp_6s": 27, "hp_4s": 32, "hp_bdry_pct": 18.15, "hp_dot_pct": 35.69, "hp_rax_per_100": -14.8, "hp_consistency_pct": 55.56, "hp_elite_share": 0.88, "rr_role": "Middle/Death Impact Batter"}, {"rank": 38, "striker_id": 4823, "player_name": "Washington Sundar", "teams": "Gujarat Titans, India, Sunrisers Hyderabad", "pressure_rating": 33.84, "score_hp_excellence": 34.34, "vol_factor": 33.46, "score_baseline_elevation": 33.17, "score_consistency": 33.63, "hp_innings": 34, "hp_balls": 300, "hp_runs": 447, "hp_sr": 149.0, "us_sr": 131.75, "sr_delta_hp_vs_us": 17.25, "hp_6s": 18, "hp_4s": 40, "hp_bdry_pct": 19.33, "hp_dot_pct": 31.33, "hp_rax_per_100": -22.97, "hp_consistency_pct": 34.78, "hp_elite_share": 1.0, "rr_role": "Middle/Death Impact Batter"}, {"rank": 39, "striker_id": 4900, "player_name": "Wanindu Hasaranga", "teams": "Lucknow Super Giants, Rajasthan Royals, Royal Challengers Bengaluru, Sri Lanka, Sunrisers Hyderabad", "pressure_rating": 5.98, "score_hp_excellence": 7.9, "vol_factor": 0.0, "score_baseline_elevation": 1.47, "score_consistency": 14.67, "hp_innings": 46, "hp_balls": 244, "hp_runs": 278, "hp_sr": 113.93, "us_sr": 136.61, "sr_delta_hp_vs_us": -22.67, "hp_6s": 7, "hp_4s": 25, "hp_bdry_pct": 13.11, "hp_dot_pct": 39.75, "hp_rax_per_100": -99.71, "hp_consistency_pct": 18.18, "hp_elite_share": 0.98, "rr_role": "Middle/Death Impact Batter"}];
+
+const BOWLERS = [{"rank": 1, "bowler_id": 2933, "player_name": "Jasprit Bumrah", "teams": "India, Mumbai Indians", "pressure_rating": 77.08, "crunch_workload": 89.06, "score_hp_excellence": 69.17, "score_consistency": 73.79, "score_baseline_elevation": 61.81, "hp_innings": 59, "hp_balls": 552, "hp_wkts": 40, "hp_econ": 7.21, "us_econ": 7.16, "hp_econ_saved": 3.0, "hp_sr": 13.8, "us_sr": 25.69, "hp_dot_pct": 37.68, "hp_rsax_per_24": 17.68, "hp_consistency_pct": 83.33, "hp_elite_share": 1.0, "rr_role": "Death Spearhead (Saves +3.00 Runs/Over)"}, {"rank": 2, "bowler_id": 781, "player_name": "Sunil Narine", "teams": "Kolkata Knight Riders", "pressure_rating": 76.27, "crunch_workload": 70.97, "score_hp_excellence": 79.39, "score_consistency": 83.52, "score_baseline_elevation": 75.64, "hp_innings": 43, "hp_balls": 267, "hp_wkts": 22, "hp_econ": 5.98, "us_econ": 7.04, "hp_econ_saved": 3.6, "hp_sr": 12.14, "us_sr": 28.77, "hp_dot_pct": 44.94, "hp_rsax_per_24": 23.85, "hp_consistency_pct": 87.88, "hp_elite_share": 1.0, "rr_role": "Mystery Spinner (5.98 Pressure Economy)"}, {"rank": 3, "bowler_id": 4722, "player_name": "Rashid Khan", "teams": "Afghanistan, Gujarat Titans", "pressure_rating": 76.25, "crunch_workload": 89.25, "score_hp_excellence": 71.8, "score_consistency": 60.17, "score_baseline_elevation": 63.92, "hp_innings": 86, "hp_balls": 644, "hp_wkts": 59, "hp_econ": 7.59, "us_econ": 7.35, "hp_econ_saved": 1.92, "hp_sr": 10.92, "us_sr": 22.37, "hp_dot_pct": 37.89, "hp_rsax_per_24": 19.17, "hp_consistency_pct": 73.33, "hp_elite_share": 0.97, "rr_role": "Marquee Wrist-Spinner (59 Pressure Wkts)"}, {"rank": 4, "bowler_id": 8661, "player_name": "Matheesha Pathirana", "teams": "Chennai Super Kings, Kolkata Knight Riders, Sri Lanka", "pressure_rating": 73.07, "crunch_workload": 76.74, "score_hp_excellence": 70.84, "score_consistency": 72.8, "score_baseline_elevation": 66.64, "hp_innings": 40, "hp_balls": 518, "hp_wkts": 48, "hp_econ": 8.54, "us_econ": 8.69, "hp_econ_saved": 1.79, "hp_sr": 10.79, "us_sr": 18.06, "hp_dot_pct": 39.58, "hp_rsax_per_24": 18.08, "hp_consistency_pct": 82.05, "hp_elite_share": 1.0, "rr_role": "Death Wicket-Taker (48 Wkts, 10.8 SR)"}, {"rank": 5, "bowler_id": 6464, "player_name": "Arshdeep Singh", "teams": "India, Punjab Kings", "pressure_rating": 72.89, "crunch_workload": 100.0, "score_hp_excellence": 52.8, "score_consistency": 57.96, "score_baseline_elevation": 57.12, "hp_innings": 126, "hp_balls": 1066, "hp_wkts": 87, "hp_econ": 9.56, "us_econ": 8.87, "hp_econ_saved": 0.62, "hp_sr": 12.25, "us_sr": 20.01, "hp_dot_pct": 33.3, "hp_rsax_per_24": 10.06, "hp_consistency_pct": 72.57, "hp_elite_share": 0.99, "rr_role": "Left-Arm Powerplay & Death Pacer (87 Wkts)"}, {"rank": 6, "bowler_id": 3644, "player_name": "Kuldeep Yadav", "teams": "Delhi Capitals, India", "pressure_rating": 69.92, "crunch_workload": 66.65, "score_hp_excellence": 75.05, "score_consistency": 66.59, "score_baseline_elevation": 70.03, "hp_innings": 53, "hp_balls": 385, "hp_wkts": 38, "hp_econ": 7.68, "us_econ": 8.1, "hp_econ_saved": 1.79, "hp_sr": 10.13, "us_sr": 19.11, "hp_dot_pct": 41.04, "hp_rsax_per_24": 21.51, "hp_consistency_pct": 77.08, "hp_elite_share": 0.99, "rr_role": "Indian Left-Arm Wrist-Spinner (10.1 SR)"}, {"rank": 7, "bowler_id": 4900, "player_name": "Wanindu Hasaranga", "teams": "Lucknow Super Giants, Rajasthan Royals, Royal Challengers Bengaluru, Sri Lanka, Sunrisers Hyderabad", "pressure_rating": 62.91, "crunch_workload": 58.0, "score_hp_excellence": 71.6, "score_consistency": 54.7, "score_baseline_elevation": 64.4, "hp_innings": 53, "hp_balls": 374, "hp_wkts": 40, "hp_econ": 8.15, "us_econ": 7.87, "hp_econ_saved": 0.9, "hp_sr": 9.35, "us_sr": 17.86, "hp_dot_pct": 39.84, "hp_rsax_per_24": 19.9, "hp_consistency_pct": 70.21, "hp_elite_share": 1.0, "rr_role": "Middle-Overs Leg-Spin All-Rounder (9.4 SR)"}, {"rank": 8, "bowler_id": 6256, "player_name": "Varun Chakravarthy", "teams": "India, Kolkata Knight Riders", "pressure_rating": 60.85, "crunch_workload": 66.47, "score_hp_excellence": 61.28, "score_consistency": 55.15, "score_baseline_elevation": 45.42, "hp_innings": 62, "hp_balls": 459, "hp_wkts": 32, "hp_econ": 7.62, "us_econ": 8.07, "hp_econ_saved": 1.73, "hp_sr": 14.34, "us_sr": 16.2, "hp_dot_pct": 44.23, "hp_rsax_per_24": 12.07, "hp_consistency_pct": 67.92, "hp_elite_share": 0.99, "rr_role": "High-Dot Mystery Spinner (44.2% Dots)"}, {"rank": 9, "bowler_id": 2261, "player_name": "Harshal Patel", "teams": "India, Punjab Kings, Royal Challengers Bengaluru, Sunrisers Hyderabad", "pressure_rating": 60.05, "crunch_workload": 68.32, "score_hp_excellence": 53.4, "score_consistency": 54.72, "score_baseline_elevation": 58.29, "hp_innings": 63, "hp_balls": 640, "hp_wkts": 53, "hp_econ": 9.92, "us_econ": 8.8, "hp_econ_saved": 0.57, "hp_sr": 12.08, "us_sr": 23.33, "hp_dot_pct": 33.91, "hp_rsax_per_24": 10.33, "hp_consistency_pct": 65.57, "hp_elite_share": 1.0, "rr_role": "Slower-Ball Death Specialist for Jaipur"}, {"rank": 10, "bowler_id": 1612, "player_name": "Yuzvendra Chahal", "teams": "India, Punjab Kings, Rajasthan Royals", "pressure_rating": 58.56, "crunch_workload": 59.97, "score_hp_excellence": 59.72, "score_consistency": 49.74, "score_baseline_elevation": 62.13, "hp_innings": 66, "hp_balls": 484, "hp_wkts": 46, "hp_econ": 9.17, "us_econ": 8.43, "hp_econ_saved": 0.53, "hp_sr": 10.52, "us_sr": 21.21, "hp_dot_pct": 31.82, "hp_rsax_per_24": 15.35, "hp_consistency_pct": 60.34, "hp_elite_share": 0.99, "rr_role": "Proven Leg-Spin Wicket-Taker (46 Pressure Wkts)"}, {"rank": 11, "bowler_id": 7364, "player_name": "Haris Rauf", "teams": "Pakistan", "pressure_rating": 58.02, "crunch_workload": 54.85, "score_hp_excellence": 65.38, "score_consistency": 49.77, "score_baseline_elevation": 57.26, "hp_innings": 38, "hp_balls": 365, "hp_wkts": 36, "hp_econ": 8.83, "us_econ": 8.45, "hp_econ_saved": 0.77, "hp_sr": 10.14, "us_sr": 16.55, "hp_dot_pct": 41.37, "hp_rsax_per_24": 14.86, "hp_consistency_pct": 71.43, "hp_elite_share": 0.99, "rr_role": "High-Pressure Strike Bowler"}, {"rank": 12, "bowler_id": 4373, "player_name": "Mustafizur Rahman", "teams": "Bangladesh, Chennai Super Kings, Delhi Capitals, Kolkata Knight Riders", "pressure_rating": 57.93, "crunch_workload": 69.59, "score_hp_excellence": 50.81, "score_consistency": 52.72, "score_baseline_elevation": 44.02, "hp_innings": 60, "hp_balls": 606, "hp_wkts": 39, "hp_econ": 8.73, "us_econ": 7.14, "hp_econ_saved": 1.31, "hp_sr": 15.54, "us_sr": 24.25, "hp_dot_pct": 37.62, "hp_rsax_per_24": 7.57, "hp_consistency_pct": 71.43, "hp_elite_share": 0.92, "rr_role": "High-Pressure Strike Bowler"}, {"rank": 13, "bowler_id": 278, "player_name": "Tim Southee", "teams": "Kolkata Knight Riders, New Zealand", "pressure_rating": 57.82, "crunch_workload": 50.14, "score_hp_excellence": 65.31, "score_consistency": 55.03, "score_baseline_elevation": 66.46, "hp_innings": 29, "hp_balls": 233, "hp_wkts": 24, "hp_econ": 8.83, "us_econ": 8.12, "hp_econ_saved": 1.21, "hp_sr": 9.71, "us_sr": 19.13, "hp_dot_pct": 33.91, "hp_rsax_per_24": 17.87, "hp_consistency_pct": 73.08, "hp_elite_share": 0.95, "rr_role": "High-Pressure Strike Bowler"}, {"rank": 14, "bowler_id": 4265, "player_name": "T Natarajan", "teams": "Delhi Capitals, Sunrisers Hyderabad", "pressure_rating": 57.52, "crunch_workload": 56.22, "score_hp_excellence": 51.64, "score_consistency": 68.37, "score_baseline_elevation": 66.98, "hp_innings": 40, "hp_balls": 424, "hp_wkts": 34, "hp_econ": 9.83, "us_econ": 9.46, "hp_econ_saved": 0.82, "hp_sr": 12.47, "us_sr": 33.05, "hp_dot_pct": 28.54, "hp_rsax_per_24": 11.37, "hp_consistency_pct": 74.36, "hp_elite_share": 1.0, "rr_role": "High-Pressure Strike Bowler"}, {"rank": 15, "bowler_id": 2636, "player_name": "Adam Zampa", "teams": "Australia, Rajasthan Royals, Sunrisers Hyderabad", "pressure_rating": 57.43, "crunch_workload": 48.37, "score_hp_excellence": 69.6, "score_consistency": 41.42, "score_baseline_elevation": 75.1, "hp_innings": 35, "hp_balls": 238, "hp_wkts": 27, "hp_econ": 8.39, "us_econ": 8.34, "hp_econ_saved": 0.84, "hp_sr": 8.81, "us_sr": 20.77, "hp_dot_pct": 35.71, "hp_rsax_per_24": 20.82, "hp_consistency_pct": 63.64, "hp_elite_share": 0.92, "rr_role": "High-Pressure Strike Bowler"}, {"rank": 16, "bowler_id": 29888, "player_name": "Harshit Rana", "teams": "India, Kolkata Knight Riders", "pressure_rating": 55.25, "crunch_workload": 46.95, "score_hp_excellence": 60.18, "score_consistency": 59.44, "score_baseline_elevation": 64.94, "hp_innings": 29, "hp_balls": 232, "hp_wkts": 20, "hp_econ": 9.21, "us_econ": 9.7, "hp_econ_saved": 0.97, "hp_sr": 11.6, "us_sr": 18.58, "hp_dot_pct": 40.09, "hp_rsax_per_24": 13.63, "hp_consistency_pct": 70.37, "hp_elite_share": 0.97, "rr_role": "High-Pressure Strike Bowler"}, {"rank": 17, "bowler_id": 7920, "player_name": "Nathan Ellis", "teams": "Australia, Chennai Super Kings, Punjab Kings", "pressure_rating": 54.49, "crunch_workload": 53.71, "score_hp_excellence": 56.69, "score_consistency": 57.97, "score_baseline_elevation": 44.64, "hp_innings": 32, "hp_balls": 345, "hp_wkts": 27, "hp_econ": 8.94, "us_econ": 7.83, "hp_econ_saved": 1.07, "hp_sr": 12.78, "us_sr": 18.42, "hp_dot_pct": 38.55, "hp_rsax_per_24": 11.05, "hp_consistency_pct": 74.19, "hp_elite_share": 1.0, "rr_role": "High-Pressure Strike Bowler"}, {"rank": 18, "bowler_id": 7967, "player_name": "Noor Ahmad", "teams": "Afghanistan, Chennai Super Kings, Gujarat Titans", "pressure_rating": 54.07, "crunch_workload": 54.59, "score_hp_excellence": 58.82, "score_consistency": 45.58, "score_baseline_elevation": 48.14, "hp_innings": 40, "hp_balls": 298, "hp_wkts": 21, "hp_econ": 7.81, "us_econ": 7.96, "hp_econ_saved": 1.57, "hp_sr": 14.19, "us_sr": 18.27, "hp_dot_pct": 42.28, "hp_rsax_per_24": 11.82, "hp_consistency_pct": 60.0, "hp_elite_share": 0.94, "rr_role": "High-Pressure Strike Bowler"}, {"rank": 19, "bowler_id": 360, "player_name": "Bhuvneshwar Kumar", "teams": "India, Royal Challengers Bengaluru, Sunrisers Hyderabad", "pressure_rating": 53.38, "crunch_workload": 63.88, "score_hp_excellence": 42.56, "score_consistency": 58.99, "score_baseline_elevation": 40.83, "hp_innings": 73, "hp_balls": 672, "hp_wkts": 47, "hp_econ": 9.89, "us_econ": 7.53, "hp_econ_saved": 0.42, "hp_sr": 14.3, "us_sr": 22.78, "hp_dot_pct": 28.27, "hp_rsax_per_24": 6.52, "hp_consistency_pct": 68.66, "hp_elite_share": 0.99, "rr_role": "High-Pressure Strike Bowler"}, {"rank": 20, "bowler_id": 4641, "player_name": "Lungi Ngidi", "teams": "Delhi Capitals, Royal Challengers Bengaluru, South Africa", "pressure_rating": 53.16, "crunch_workload": 47.19, "score_hp_excellence": 57.07, "score_consistency": 55.53, "score_baseline_elevation": 59.83, "hp_innings": 30, "hp_balls": 249, "hp_wkts": 21, "hp_econ": 9.13, "us_econ": 8.78, "hp_econ_saved": 0.9, "hp_sr": 11.86, "us_sr": 21.12, "hp_dot_pct": 37.75, "hp_rsax_per_24": 11.62, "hp_consistency_pct": 70.37, "hp_elite_share": 1.0, "rr_role": "High-Pressure Strike Bowler"}, {"rank": 21, "bowler_id": 830, "player_name": "Josh Hazlewood", "teams": "Australia, Royal Challengers Bengaluru", "pressure_rating": 52.27, "crunch_workload": 55.43, "score_hp_excellence": 53.77, "score_consistency": 51.82, "score_baseline_elevation": 34.99, "hp_innings": 51, "hp_balls": 453, "hp_wkts": 34, "hp_econ": 9.42, "us_econ": 7.77, "hp_econ_saved": 0.67, "hp_sr": 13.32, "us_sr": 15.98, "hp_dot_pct": 37.31, "hp_rsax_per_24": 10.82, "hp_consistency_pct": 64.0, "hp_elite_share": 1.0, "rr_role": "High-Pressure Strike Bowler"}, {"rank": 22, "bowler_id": 19316, "player_name": "Maheesh Theekshana", "teams": "Chennai Super Kings, Rajasthan Royals, Sri Lanka", "pressure_rating": 51.77, "crunch_workload": 56.52, "score_hp_excellence": 47.48, "score_consistency": 51.04, "score_baseline_elevation": 48.9, "hp_innings": 62, "hp_balls": 448, "hp_wkts": 30, "hp_econ": 8.49, "us_econ": 7.54, "hp_econ_saved": 0.95, "hp_sr": 14.93, "us_sr": 28.84, "hp_dot_pct": 33.71, "hp_rsax_per_24": 6.97, "hp_consistency_pct": 67.86, "hp_elite_share": 0.99, "rr_role": "High-Pressure Strike Bowler"}, {"rank": 23, "bowler_id": 2633, "player_name": "Jason Holder", "teams": "Gujarat Titans, Lucknow Super Giants, Rajasthan Royals, West Indies", "pressure_rating": 51.4, "crunch_workload": 60.46, "score_hp_excellence": 45.63, "score_consistency": 40.41, "score_baseline_elevation": 51.79, "hp_innings": 71, "hp_balls": 636, "hp_wkts": 50, "hp_econ": 9.75, "us_econ": 8.61, "hp_econ_saved": 0.1, "hp_sr": 12.72, "us_sr": 21.9, "hp_dot_pct": 31.6, "hp_rsax_per_24": 6.68, "hp_consistency_pct": 59.09, "hp_elite_share": 0.95, "rr_role": "High-Pressure Strike Bowler"}, {"rank": 24, "bowler_id": 3653, "player_name": "Avesh Khan", "teams": "India, Lucknow Super Giants, Rajasthan Royals", "pressure_rating": 49.94, "crunch_workload": 56.4, "score_hp_excellence": 40.48, "score_consistency": 55.11, "score_baseline_elevation": 49.46, "hp_innings": 66, "hp_balls": 602, "hp_wkts": 39, "hp_econ": 10.12, "us_econ": 9.29, "hp_econ_saved": 0.28, "hp_sr": 15.44, "us_sr": 22.77, "hp_dot_pct": 30.4, "hp_rsax_per_24": 5.07, "hp_consistency_pct": 66.13, "hp_elite_share": 0.99, "rr_role": "High-Pressure Strike Bowler"}, {"rank": 25, "bowler_id": 2681, "player_name": "Taskin Ahmed", "teams": "Bangladesh", "pressure_rating": 49.16, "crunch_workload": 49.24, "score_hp_excellence": 55.89, "score_consistency": 37.09, "score_baseline_elevation": 43.37, "hp_innings": 38, "hp_balls": 303, "hp_wkts": 25, "hp_econ": 8.57, "us_econ": 7.66, "hp_econ_saved": 0.8, "hp_sr": 12.12, "us_sr": 17.55, "hp_dot_pct": 40.92, "hp_rsax_per_24": 8.88, "hp_consistency_pct": 63.89, "hp_elite_share": 0.85, "rr_role": "High-Pressure Strike Bowler"}, {"rank": 26, "bowler_id": 39657, "player_name": "Eshan Malinga", "teams": "Sri Lanka, Sri Lanka A, Sunrisers Hyderabad", "pressure_rating": 48.26, "crunch_workload": 48.6, "score_hp_excellence": 47.94, "score_consistency": 49.89, "score_baseline_elevation": 45.55, "hp_innings": 30, "hp_balls": 281, "hp_wkts": 18, "hp_econ": 8.86, "us_econ": 9.1, "hp_econ_saved": 1.08, "hp_sr": 15.61, "us_sr": 17.32, "hp_dot_pct": 34.52, "hp_rsax_per_24": 7.07, "hp_consistency_pct": 68.97, "hp_elite_share": 0.81, "rr_role": "High-Pressure Strike Bowler"}, {"rank": 27, "bowler_id": 1566, "player_name": "Mohammed Shami", "teams": "Gujarat Titans, India, Lucknow Super Giants, Sunrisers Hyderabad", "pressure_rating": 47.91, "crunch_workload": 42.72, "score_hp_excellence": 51.03, "score_consistency": 52.37, "score_baseline_elevation": 51.11, "hp_innings": 37, "hp_balls": 232, "hp_wkts": 19, "hp_econ": 10.09, "us_econ": 8.28, "hp_econ_saved": 0.47, "hp_sr": 12.21, "us_sr": 20.86, "hp_dot_pct": 30.6, "hp_rsax_per_24": 10.68, "hp_consistency_pct": 60.61, "hp_elite_share": 1.0, "rr_role": "High-Pressure Strike Bowler"}, {"rank": 28, "bowler_id": 3298, "player_name": "Jofra Archer", "teams": "England, Mumbai Indians, Rajasthan Royals", "pressure_rating": 47.61, "crunch_workload": 48.22, "score_hp_excellence": 46.87, "score_consistency": 46.29, "score_baseline_elevation": 49.76, "hp_innings": 43, "hp_balls": 341, "hp_wkts": 24, "hp_econ": 9.55, "us_econ": 8.69, "hp_econ_saved": 0.63, "hp_sr": 14.21, "us_sr": 19.53, "hp_dot_pct": 32.55, "hp_rsax_per_24": 7.17, "hp_consistency_pct": 60.0, "hp_elite_share": 1.0, "rr_role": "High-Pressure Strike Bowler"}, {"rank": 29, "bowler_id": 4101, "player_name": "Mitchell Santner", "teams": "Chennai Super Kings, Mumbai Indians, New Zealand", "pressure_rating": 47.42, "crunch_workload": 48.16, "score_hp_excellence": 46.56, "score_consistency": 53.48, "score_baseline_elevation": 38.34, "hp_innings": 36, "hp_balls": 269, "hp_wkts": 16, "hp_econ": 7.74, "us_econ": 7.33, "hp_econ_saved": 1.15, "hp_sr": 16.81, "us_sr": 20.68, "hp_dot_pct": 36.06, "hp_rsax_per_24": 5.45, "hp_consistency_pct": 72.41, "hp_elite_share": 0.98, "rr_role": "High-Pressure Strike Bowler"}, {"rank": 30, "bowler_id": 2876, "player_name": "Axar Patel", "teams": "Delhi Capitals, India", "pressure_rating": 47.26, "crunch_workload": 52.57, "score_hp_excellence": 44.78, "score_consistency": 42.57, "score_baseline_elevation": 41.77, "hp_innings": 53, "hp_balls": 368, "hp_wkts": 20, "hp_econ": 7.99, "us_econ": 7.84, "hp_econ_saved": 1.17, "hp_sr": 18.4, "us_sr": 23.02, "hp_dot_pct": 37.5, "hp_rsax_per_24": 4.23, "hp_consistency_pct": 60.98, "hp_elite_share": 0.98, "rr_role": "High-Pressure Strike Bowler"}, {"rank": 31, "bowler_id": 5809, "player_name": "Naveen ul Haq", "teams": "Afghanistan, Lucknow Super Giants", "pressure_rating": 46.89, "crunch_workload": 46.42, "score_hp_excellence": 46.11, "score_consistency": 57.66, "score_baseline_elevation": 35.31, "hp_innings": 30, "hp_balls": 291, "hp_wkts": 19, "hp_econ": 9.46, "us_econ": 8.52, "hp_econ_saved": 0.76, "hp_sr": 15.32, "us_sr": 15.0, "hp_dot_pct": 34.02, "hp_rsax_per_24": 6.18, "hp_consistency_pct": 70.37, "hp_elite_share": 1.0, "rr_role": "High-Pressure Strike Bowler"}, {"rank": 32, "bowler_id": 7503, "player_name": "Ravi Bishnoi", "teams": "India, Lucknow Super Giants, Rajasthan Royals", "pressure_rating": 46.71, "crunch_workload": 46.08, "score_hp_excellence": 49.86, "score_consistency": 43.33, "score_baseline_elevation": 43.34, "hp_innings": 67, "hp_balls": 477, "hp_wkts": 40, "hp_econ": 9.71, "us_econ": 7.95, "hp_econ_saved": -0.44, "hp_sr": 11.92, "us_sr": 22.02, "hp_dot_pct": 38.99, "hp_rsax_per_24": 7.82, "hp_consistency_pct": 59.65, "hp_elite_share": 1.0, "rr_role": "High-Pressure Strike Bowler"}, {"rank": 33, "bowler_id": 4489, "player_name": "Prasidh Krishna", "teams": "Gujarat Titans, India, Rajasthan Royals", "pressure_rating": 46.67, "crunch_workload": 41.92, "score_hp_excellence": 50.18, "score_consistency": 53.63, "score_baseline_elevation": 42.89, "hp_innings": 44, "hp_balls": 359, "hp_wkts": 30, "hp_econ": 10.71, "us_econ": 8.34, "hp_econ_saved": -0.29, "hp_sr": 11.97, "us_sr": 20.87, "hp_dot_pct": 37.33, "hp_rsax_per_24": 8.56, "hp_consistency_pct": 63.41, "hp_elite_share": 1.0, "rr_role": "High-Pressure Strike Bowler"}, {"rank": 34, "bowler_id": 5944, "player_name": "Mohammed Siraj", "teams": "Gujarat Titans, India, Royal Challengers Bengaluru", "pressure_rating": 46.37, "crunch_workload": 47.64, "score_hp_excellence": 43.23, "score_consistency": 53.0, "score_baseline_elevation": 42.34, "hp_innings": 60, "hp_balls": 454, "hp_wkts": 30, "hp_econ": 10.24, "us_econ": 8.26, "hp_econ_saved": 0.13, "hp_sr": 15.13, "us_sr": 24.14, "hp_dot_pct": 36.34, "hp_rsax_per_24": 4.59, "hp_consistency_pct": 62.07, "hp_elite_share": 1.0, "rr_role": "High-Pressure Strike Bowler"}, {"rank": 35, "bowler_id": 1318, "player_name": "Andre Russell", "teams": "Kolkata Knight Riders, West Indies", "pressure_rating": 45.29, "crunch_workload": 37.97, "score_hp_excellence": 48.59, "score_consistency": 53.32, "score_baseline_elevation": 50.98, "hp_innings": 40, "hp_balls": 307, "hp_wkts": 28, "hp_econ": 11.06, "us_econ": 10.77, "hp_econ_saved": -0.57, "hp_sr": 10.96, "us_sr": 13.15, "hp_dot_pct": 32.25, "hp_rsax_per_24": 8.57, "hp_consistency_pct": 63.33, "hp_elite_share": 1.0, "rr_role": "High-Pressure Strike Bowler"}, {"rank": 36, "bowler_id": 6806, "player_name": "Tushar Deshpande", "teams": "Chennai Super Kings, India, Rajasthan Royals", "pressure_rating": 45.26, "crunch_workload": 36.16, "score_hp_excellence": 47.91, "score_consistency": 54.91, "score_baseline_elevation": 57.97, "hp_innings": 38, "hp_balls": 321, "hp_wkts": 30, "hp_econ": 11.48, "us_econ": 9.27, "hp_econ_saved": -0.86, "hp_sr": 10.7, "us_sr": 29.83, "hp_dot_pct": 32.4, "hp_rsax_per_24": 8.31, "hp_consistency_pct": 62.86, "hp_elite_share": 1.0, "rr_role": "High-Pressure Strike Bowler"}, {"rank": 37, "bowler_id": 2399, "player_name": "Dushmantha Chameera", "teams": "Delhi Capitals, Kolkata Knight Riders, Lucknow Super Giants, Sri Lanka", "pressure_rating": 45.24, "crunch_workload": 41.79, "score_hp_excellence": 45.68, "score_consistency": 50.83, "score_baseline_elevation": 49.11, "hp_innings": 36, "hp_balls": 317, "hp_wkts": 24, "hp_econ": 10.01, "us_econ": 8.37, "hp_econ_saved": -0.01, "hp_sr": 13.21, "us_sr": 23.83, "hp_dot_pct": 34.07, "hp_rsax_per_24": 6.07, "hp_consistency_pct": 68.75, "hp_elite_share": 0.96, "rr_role": "High-Pressure Strike Bowler"}, {"rank": 38, "bowler_id": 4409, "player_name": "Sam Curran", "teams": "Chennai Super Kings, England, Punjab Kings, Rajasthan Royals", "pressure_rating": 44.83, "crunch_workload": 41.61, "score_hp_excellence": 43.15, "score_consistency": 44.59, "score_baseline_elevation": 63.92, "hp_innings": 54, "hp_balls": 419, "hp_wkts": 33, "hp_econ": 10.53, "us_econ": 9.2, "hp_econ_saved": -0.51, "hp_sr": 12.7, "us_sr": 32.1, "hp_dot_pct": 28.64, "hp_rsax_per_24": 7.95, "hp_consistency_pct": 61.22, "hp_elite_share": 1.0, "rr_role": "High-Pressure Strike Bowler"}, {"rank": 39, "bowler_id": 2847, "player_name": "Shardul Thakur", "teams": "Chennai Super Kings, Delhi Capitals, India, Kolkata Knight Riders, Lucknow Super Giants, Mumbai Indians", "pressure_rating": 44.58, "crunch_workload": 41.81, "score_hp_excellence": 42.84, "score_consistency": 48.99, "score_baseline_elevation": 55.11, "hp_innings": 36, "hp_balls": 322, "hp_wkts": 22, "hp_econ": 10.49, "us_econ": 10.36, "hp_econ_saved": 0.07, "hp_sr": 14.64, "us_sr": 20.12, "hp_dot_pct": 33.54, "hp_rsax_per_24": 4.81, "hp_consistency_pct": 57.58, "hp_elite_share": 1.0, "rr_role": "High-Pressure Strike Bowler"}, {"rank": 40, "bowler_id": 2878, "player_name": "Mohit Sharma", "teams": "Delhi Capitals, Gujarat Titans", "pressure_rating": 44.26, "crunch_workload": 41.81, "score_hp_excellence": 43.51, "score_consistency": 56.75, "score_baseline_elevation": 37.95, "hp_innings": 27, "hp_balls": 303, "hp_wkts": 23, "hp_econ": 10.53, "us_econ": 8.86, "hp_econ_saved": 0.06, "hp_sr": 13.17, "us_sr": 18.21, "hp_dot_pct": 27.39, "hp_rsax_per_24": 6.9, "hp_consistency_pct": 64.0, "hp_elite_share": 1.0, "rr_role": "High-Pressure Strike Bowler"}, {"rank": 41, "bowler_id": 3275, "player_name": "Alzarri Joseph", "teams": "Gujarat Titans, Royal Challengers Bengaluru, West Indies", "pressure_rating": 43.93, "crunch_workload": 44.63, "score_hp_excellence": 39.42, "score_consistency": 47.4, "score_baseline_elevation": 51.73, "hp_innings": 42, "hp_balls": 359, "hp_wkts": 21, "hp_econ": 9.44, "us_econ": 9.75, "hp_econ_saved": 0.35, "hp_sr": 17.1, "us_sr": 21.46, "hp_dot_pct": 34.54, "hp_rsax_per_24": 2.07, "hp_consistency_pct": 65.0, "hp_elite_share": 1.0, "rr_role": "High-Pressure Strike Bowler"}, {"rank": 42, "bowler_id": 7240, "player_name": "FazalHaq Farooqi", "teams": "Afghanistan, Rajasthan Royals, Sunrisers Hyderabad", "pressure_rating": 43.88, "crunch_workload": 47.27, "score_hp_excellence": 38.98, "score_consistency": 49.33, "score_baseline_elevation": 39.33, "hp_innings": 36, "hp_balls": 307, "hp_wkts": 15, "hp_econ": 9.05, "us_econ": 7.75, "hp_econ_saved": 0.97, "hp_sr": 20.47, "us_sr": 23.23, "hp_dot_pct": 33.22, "hp_rsax_per_24": 1.93, "hp_consistency_pct": 69.7, "hp_elite_share": 0.96, "rr_role": "High-Pressure Strike Bowler"}, {"rank": 43, "bowler_id": 8380, "player_name": "Mohammad Rishad Hossain", "teams": "Bangladesh", "pressure_rating": 43.61, "crunch_workload": 40.69, "score_hp_excellence": 48.19, "score_consistency": 37.83, "score_baseline_elevation": 47.89, "hp_innings": 25, "hp_balls": 227, "hp_wkts": 17, "hp_econ": 8.51, "us_econ": 8.42, "hp_econ_saved": 0.31, "hp_sr": 13.35, "us_sr": 17.98, "hp_dot_pct": 37.89, "hp_rsax_per_24": 5.53, "hp_consistency_pct": 61.9, "hp_elite_share": 0.95, "rr_role": "High-Pressure Strike Bowler"}, {"rank": 44, "bowler_id": 22920, "player_name": "Jacob Duffy", "teams": "New Zealand, Royal Challengers Bengaluru", "pressure_rating": 41.55, "crunch_workload": 39.45, "score_hp_excellence": 51.03, "score_consistency": 25.56, "score_baseline_elevation": 40.77, "hp_innings": 27, "hp_balls": 234, "hp_wkts": 19, "hp_econ": 9.44, "us_econ": 8.48, "hp_econ_saved": 0.06, "hp_sr": 12.32, "us_sr": 14.95, "hp_dot_pct": 37.61, "hp_rsax_per_24": 8.68, "hp_consistency_pct": 48.0, "hp_elite_share": 1.0, "rr_role": "High-Pressure Strike Bowler"}, {"rank": 45, "bowler_id": 3628, "player_name": "Kagiso Rabada", "teams": "Gujarat Titans, Punjab Kings, South Africa", "pressure_rating": 41.19, "crunch_workload": 38.27, "score_hp_excellence": 41.86, "score_consistency": 50.55, "score_baseline_elevation": 36.52, "hp_innings": 53, "hp_balls": 374, "hp_wkts": 27, "hp_econ": 10.6, "us_econ": 8.8, "hp_econ_saved": -0.55, "hp_sr": 13.85, "us_sr": 19.64, "hp_dot_pct": 36.36, "hp_rsax_per_24": 3.93, "hp_consistency_pct": 62.22, "hp_elite_share": 1.0, "rr_role": "High-Pressure Strike Bowler"}, {"rank": 46, "bowler_id": 3330, "player_name": "Hardik Pandya", "teams": "Gujarat Titans, India, Mumbai Indians", "pressure_rating": 40.92, "crunch_workload": 35.15, "score_hp_excellence": 45.88, "score_consistency": 34.26, "score_baseline_elevation": 56.64, "hp_innings": 46, "hp_balls": 309, "hp_wkts": 28, "hp_econ": 10.62, "us_econ": 8.71, "hp_econ_saved": -0.88, "hp_sr": 11.04, "us_sr": 27.07, "hp_dot_pct": 31.39, "hp_rsax_per_24": 7.34, "hp_consistency_pct": 52.63, "hp_elite_share": 0.98, "rr_role": "High-Pressure Strike Bowler"}, {"rank": 47, "bowler_id": 786, "player_name": "Chris Jordan", "teams": "Chennai Super Kings, England, Mumbai Indians", "pressure_rating": 40.78, "crunch_workload": 38.06, "score_hp_excellence": 36.35, "score_consistency": 43.75, "score_baseline_elevation": 62.69, "hp_innings": 24, "hp_balls": 243, "hp_wkts": 13, "hp_econ": 9.98, "us_econ": 9.67, "hp_econ_saved": 0.11, "hp_sr": 18.69, "us_sr": 51.17, "hp_dot_pct": 32.92, "hp_rsax_per_24": 0.4, "hp_consistency_pct": 60.87, "hp_elite_share": 1.0, "rr_role": "High-Pressure Strike Bowler"}, {"rank": 48, "bowler_id": 4816, "player_name": "Khaleel Ahmed", "teams": "Chennai Super Kings, Delhi Capitals, India", "pressure_rating": 40.77, "crunch_workload": 34.17, "score_hp_excellence": 46.56, "score_consistency": 42.92, "score_baseline_elevation": 43.68, "hp_innings": 40, "hp_balls": 304, "hp_wkts": 26, "hp_econ": 11.21, "us_econ": 8.17, "hp_econ_saved": -0.91, "hp_sr": 11.69, "us_sr": 24.83, "hp_dot_pct": 37.5, "hp_rsax_per_24": 6.23, "hp_consistency_pct": 52.63, "hp_elite_share": 1.0, "rr_role": "High-Pressure Strike Bowler"}, {"rank": 49, "bowler_id": 2320, "player_name": "Trent Boult", "teams": "Mumbai Indians, New Zealand, Rajasthan Royals", "pressure_rating": 39.49, "crunch_workload": 42.1, "score_hp_excellence": 36.38, "score_consistency": 43.28, "score_baseline_elevation": 34.26, "hp_innings": 44, "hp_balls": 323, "hp_wkts": 19, "hp_econ": 10.01, "us_econ": 7.96, "hp_econ_saved": 0.22, "hp_sr": 17.0, "us_sr": 22.59, "hp_dot_pct": 28.48, "hp_rsax_per_24": 2.13, "hp_consistency_pct": 55.0, "hp_elite_share": 1.0, "rr_role": "High-Pressure Strike Bowler"}, {"rank": 50, "bowler_id": 7808, "player_name": "Marco Jansen", "teams": "Punjab Kings, South Africa, Sunrisers Hyderabad", "pressure_rating": 39.1, "crunch_workload": 37.42, "score_hp_excellence": 35.6, "score_consistency": 49.22, "score_baseline_elevation": 42.85, "hp_innings": 38, "hp_balls": 295, "hp_wkts": 16, "hp_econ": 10.07, "us_econ": 9.41, "hp_econ_saved": -0.14, "hp_sr": 18.44, "us_sr": 24.33, "hp_dot_pct": 34.24, "hp_rsax_per_24": 0.45, "hp_consistency_pct": 61.76, "hp_elite_share": 1.0, "rr_role": "High-Pressure Strike Bowler"}, {"rank": 51, "bowler_id": 4837, "player_name": "Obed McCoy", "teams": "Rajasthan Royals, West Indies", "pressure_rating": 39.06, "crunch_workload": 34.93, "score_hp_excellence": 45.25, "score_consistency": 28.67, "score_baseline_elevation": 49.54, "hp_innings": 26, "hp_balls": 254, "hp_wkts": 22, "hp_econ": 10.58, "us_econ": 8.71, "hp_econ_saved": -0.64, "hp_sr": 11.55, "us_sr": 21.5, "hp_dot_pct": 32.68, "hp_rsax_per_24": 5.67, "hp_consistency_pct": 50.0, "hp_elite_share": 0.95, "rr_role": "High-Pressure Strike Bowler"}, {"rank": 52, "bowler_id": 5041, "player_name": "Mukesh Kumar", "teams": "Delhi Capitals, India", "pressure_rating": 38.86, "crunch_workload": 36.68, "score_hp_excellence": 34.58, "score_consistency": 51.94, "score_baseline_elevation": 42.93, "hp_innings": 43, "hp_balls": 395, "hp_wkts": 27, "hp_econ": 11.26, "us_econ": 9.56, "hp_econ_saved": -0.72, "hp_sr": 14.63, "us_sr": 21.51, "hp_dot_pct": 29.11, "hp_rsax_per_24": 1.71, "hp_consistency_pct": 64.1, "hp_elite_share": 1.0, "rr_role": "High-Pressure Strike Bowler"}, {"rank": 53, "bowler_id": 4692, "player_name": "Lockie Ferguson", "teams": "Gujarat Titans, Kolkata Knight Riders, New Zealand, Punjab Kings, Royal Challengers Bengaluru", "pressure_rating": 38.01, "crunch_workload": 41.38, "score_hp_excellence": 36.04, "score_consistency": 42.32, "score_baseline_elevation": 24.94, "hp_innings": 41, "hp_balls": 330, "hp_wkts": 16, "hp_econ": 9.75, "us_econ": 8.46, "hp_econ_saved": 0.25, "hp_sr": 20.62, "us_sr": 17.35, "hp_dot_pct": 37.27, "hp_rsax_per_24": -0.41, "hp_consistency_pct": 57.89, "hp_elite_share": 0.97, "rr_role": "High-Pressure Strike Bowler"}, {"rank": 54, "bowler_id": 2411, "player_name": "Sandeep Sharma", "teams": "Punjab Kings, Rajasthan Royals", "pressure_rating": 37.96, "crunch_workload": 36.47, "score_hp_excellence": 33.37, "score_consistency": 52.27, "score_baseline_elevation": 38.52, "hp_innings": 35, "hp_balls": 348, "hp_wkts": 24, "hp_econ": 11.38, "us_econ": 7.75, "hp_econ_saved": -0.6, "hp_sr": 14.5, "us_sr": 41.13, "hp_dot_pct": 23.28, "hp_rsax_per_24": 2.51, "hp_consistency_pct": 60.0, "hp_elite_share": 1.0, "rr_role": "High-Pressure Strike Bowler"}, {"rank": 55, "bowler_id": 479, "player_name": "Adil Rashid", "teams": "England, Sunrisers Hyderabad", "pressure_rating": 37.95, "crunch_workload": 34.53, "score_hp_excellence": 44.24, "score_consistency": 33.41, "score_baseline_elevation": 36.39, "hp_innings": 37, "hp_balls": 267, "hp_wkts": 21, "hp_econ": 9.57, "us_econ": 7.48, "hp_econ_saved": -0.66, "hp_sr": 12.71, "us_sr": 20.73, "hp_dot_pct": 37.83, "hp_rsax_per_24": 3.9, "hp_consistency_pct": 56.25, "hp_elite_share": 1.0, "rr_role": "High-Pressure Strike Bowler"}, {"rank": 56, "bowler_id": 6726, "player_name": "Romario Shepherd", "teams": "Lucknow Super Giants, Mumbai Indians, Royal Challengers Bengaluru, Sunrisers Hyderabad, West Indies", "pressure_rating": 36.57, "crunch_workload": 32.11, "score_hp_excellence": 37.97, "score_consistency": 32.22, "score_baseline_elevation": 56.0, "hp_innings": 53, "hp_balls": 409, "hp_wkts": 36, "hp_econ": 11.35, "us_econ": 10.11, "hp_econ_saved": -1.52, "hp_sr": 11.36, "us_sr": 23.06, "hp_dot_pct": 30.56, "hp_rsax_per_24": 2.65, "hp_consistency_pct": 52.08, "hp_elite_share": 1.0, "rr_role": "High-Pressure Strike Bowler"}, {"rank": 57, "bowler_id": 5379, "player_name": "Mark Adair", "teams": "Ireland", "pressure_rating": 35.46, "crunch_workload": 31.93, "score_hp_excellence": 42.02, "score_consistency": 29.41, "score_baseline_elevation": 35.77, "hp_innings": 30, "hp_balls": 295, "hp_wkts": 26, "hp_econ": 10.96, "us_econ": 7.46, "hp_econ_saved": -1.16, "hp_sr": 11.35, "us_sr": 18.33, "hp_dot_pct": 30.17, "hp_rsax_per_24": 5.23, "hp_consistency_pct": 57.14, "hp_elite_share": 0.84, "rr_role": "High-Pressure Strike Bowler"}, {"rank": 58, "bowler_id": 1758, "player_name": "Patrick Cummins", "teams": "Australia, Kolkata Knight Riders, Sunrisers Hyderabad", "pressure_rating": 31.38, "crunch_workload": 35.72, "score_hp_excellence": 25.51, "score_consistency": 37.8, "score_baseline_elevation": 24.89, "hp_innings": 40, "hp_balls": 331, "hp_wkts": 16, "hp_econ": 10.46, "us_econ": 8.69, "hp_econ_saved": -0.35, "hp_sr": 20.69, "us_sr": 19.64, "hp_dot_pct": 24.77, "hp_rsax_per_24": -3.0, "hp_consistency_pct": 50.0, "hp_elite_share": 1.0, "rr_role": "High-Pressure Strike Bowler"}, {"rank": 59, "bowler_id": 7270, "player_name": "Anrich Nortje", "teams": "Delhi Capitals, Kolkata Knight Riders, Lucknow Super Giants, South Africa", "pressure_rating": 27.37, "crunch_workload": 26.43, "score_hp_excellence": 23.81, "score_consistency": 36.07, "score_baseline_elevation": 30.58, "hp_innings": 29, "hp_balls": 265, "hp_wkts": 13, "hp_econ": 11.8, "us_econ": 9.5, "hp_econ_saved": -1.29, "hp_sr": 20.38, "us_sr": 24.83, "hp_dot_pct": 30.57, "hp_rsax_per_24": -6.06, "hp_consistency_pct": 48.28, "hp_elite_share": 1.0, "rr_role": "High-Pressure Strike Bowler"}];
+
+const IPL_TEAMS = [{"team_name": "Punjab Kings", "matches": 70, "balls": 1851, "runs": 3285, "sixes": 233, "sr": 177.47, "b_per_six": 7.94, "six_pct": 12.59}, {"team_name": "Royal Challengers Bengaluru", "matches": 72, "balls": 1897, "runs": 3328, "sixes": 220, "sr": 175.43, "b_per_six": 8.62, "six_pct": 11.6}, {"team_name": "Kolkata Knight Riders", "matches": 61, "balls": 1545, "runs": 2613, "sixes": 170, "sr": 169.13, "b_per_six": 9.09, "six_pct": 11.0}, {"team_name": "Mumbai Indians", "matches": 71, "balls": 1895, "runs": 3207, "sixes": 205, "sr": 169.23, "b_per_six": 9.24, "six_pct": 10.82}, {"team_name": "Rajasthan Royals", "matches": 72, "balls": 1966, "runs": 3294, "sixes": 205, "sr": 167.55, "b_per_six": 9.59, "six_pct": 10.43}, {"team_name": "Lucknow Super Giants", "matches": 71, "balls": 1977, "runs": 3214, "sixes": 197, "sr": 162.57, "b_per_six": 10.04, "six_pct": 9.96}, {"team_name": "Chennai Super Kings", "matches": 69, "balls": 1940, "runs": 3160, "sixes": 193, "sr": 162.89, "b_per_six": 10.05, "six_pct": 9.95}, {"team_name": "Sunrisers Hyderabad", "matches": 69, "balls": 1900, "runs": 3100, "sixes": 188, "sr": 163.16, "b_per_six": 10.11, "six_pct": 9.89}, {"team_name": "Delhi Capitals", "matches": 68, "balls": 1810, "runs": 2956, "sixes": 176, "sr": 163.31, "b_per_six": 10.28, "six_pct": 9.72}, {"team_name": "Gujarat Titans", "matches": 76, "balls": 2052, "runs": 3449, "sixes": 198, "sr": 168.08, "b_per_six": 10.36, "six_pct": 9.65}];
+
+const DEATH_PLAYERS = [{"player_name": "Tim David", "innings": 64, "balls": 573, "runs": 1151, "sixes": 93, "fours": 73, "sr": 200.87, "balls_per_six": 6.16, "six_pct": 16.23, "bdry_pct": 28.97, "dot_pct": 28.1, "dsis": 75.58}, {"player_name": "Liam Livingstone", "innings": 31, "balls": 270, "runs": 563, "sixes": 51, "fours": 29, "sr": 208.52, "balls_per_six": 5.29, "six_pct": 18.89, "bdry_pct": 29.63, "dot_pct": 27.41, "dsis": 72.72}, {"player_name": "Suryakumar Yadav", "innings": 44, "balls": 361, "runs": 784, "sixes": 60, "fours": 67, "sr": 217.17, "balls_per_six": 6.02, "six_pct": 16.62, "bdry_pct": 35.18, "dot_pct": 27.98, "dsis": 72.39}, {"player_name": "Rovman Powell", "innings": 57, "balls": 520, "runs": 983, "sixes": 81, "fours": 58, "sr": 189.04, "balls_per_six": 6.42, "six_pct": 15.58, "bdry_pct": 26.73, "dot_pct": 29.81, "dsis": 70.72}, {"player_name": "Rajat Patidar", "innings": 19, "balls": 124, "runs": 267, "sixes": 25, "fours": 17, "sr": 215.32, "balls_per_six": 4.96, "six_pct": 20.16, "bdry_pct": 33.87, "dot_pct": 30.65, "dsis": 69.2}, {"player_name": "Shreyas Iyer", "innings": 35, "balls": 304, "runs": 605, "sixes": 47, "fours": 38, "sr": 199.01, "balls_per_six": 6.47, "six_pct": 15.46, "bdry_pct": 27.96, "dot_pct": 23.36, "dsis": 67.12}, {"player_name": "Namboori Tilak Varma", "innings": 62, "balls": 554, "runs": 1047, "sixes": 71, "fours": 74, "sr": 188.99, "balls_per_six": 7.8, "six_pct": 12.82, "bdry_pct": 26.17, "dot_pct": 25.63, "dsis": 66.18}, {"player_name": "Donovan Ferreira", "innings": 15, "balls": 125, "runs": 256, "sixes": 25, "fours": 12, "sr": 204.8, "balls_per_six": 5.0, "six_pct": 20.0, "bdry_pct": 29.6, "dot_pct": 35.2, "dsis": 66.12}, {"player_name": "Heinrich Klaasen", "innings": 41, "balls": 393, "runs": 778, "sixes": 52, "fours": 53, "sr": 197.96, "balls_per_six": 7.56, "six_pct": 13.23, "bdry_pct": 26.72, "dot_pct": 20.36, "dsis": 65.81}, {"player_name": "Rinku Singh", "innings": 61, "balls": 596, "runs": 1143, "sixes": 74, "fours": 98, "sr": 191.78, "balls_per_six": 8.05, "six_pct": 12.42, "bdry_pct": 28.86, "dot_pct": 28.86, "dsis": 65.61}, {"player_name": "Nicholas Pooran", "innings": 48, "balls": 446, "runs": 847, "sixes": 61, "fours": 64, "sr": 189.91, "balls_per_six": 7.31, "six_pct": 13.68, "bdry_pct": 28.03, "dot_pct": 28.92, "dsis": 64.47}, {"player_name": "Andre Russell", "innings": 39, "balls": 337, "runs": 631, "sixes": 56, "fours": 45, "sr": 187.24, "balls_per_six": 6.02, "six_pct": 16.62, "bdry_pct": 29.97, "dot_pct": 40.06, "dsis": 63.73}, {"player_name": "Glenn Phillips", "innings": 25, "balls": 242, "runs": 489, "sixes": 33, "fours": 34, "sr": 202.07, "balls_per_six": 7.33, "six_pct": 13.64, "bdry_pct": 27.69, "dot_pct": 22.73, "dsis": 62.4}, {"player_name": "Sai Sudharsan", "innings": 19, "balls": 149, "runs": 308, "sixes": 21, "fours": 24, "sr": 206.71, "balls_per_six": 7.1, "six_pct": 14.09, "bdry_pct": 30.2, "dot_pct": 20.13, "dsis": 62.07}, {"player_name": "Marcus Stoinis", "innings": 42, "balls": 349, "runs": 666, "sixes": 47, "fours": 52, "sr": 190.83, "balls_per_six": 7.43, "six_pct": 13.47, "bdry_pct": 28.37, "dot_pct": 27.51, "dsis": 61.94}];
+
+function resetWeights() {
+  document.getElementById('sliderW1').value = 70;
+  document.getElementById('sliderW2').value = 15;
+  document.getElementById('sliderW3').value = 15;
+  document.getElementById('sliderMinBalls').value = 225;
+  updateSimulator();
+}
+
+function getSimulatedLists() {
+  const r1 = parseFloat(document.getElementById('sliderW1').value);
+  const r2 = parseFloat(document.getElementById('sliderW2').value);
+  const r3 = parseFloat(document.getElementById('sliderW3').value);
+  const minB = parseInt(document.getElementById('sliderMinBalls').value, 10);
+  const tot = r1 + r2 + r3;
+  const w1 = r1 / tot, w2 = r2 / tot, w3 = r3 / tot;
+
+  document.getElementById('lblW1').textContent = Math.round(w1 * 100) + '%';
+  document.getElementById('lblW2').textContent = Math.round(w2 * 100) + '%';
+  document.getElementById('lblW3').textContent = Math.round(w3 * 100) + '%';
+  document.getElementById('lblMinBalls').textContent = minB + ' Balls';
+
+  const simBat = BATTERS.filter(b => b.hp_balls >= minB).map(b => ({
+    ...b,
+    sim_rating: +(w1 * (0.642857 * b.score_hp_excellence + 0.357143 * b.vol_factor) + w2 * b.score_baseline_elevation + w3 * b.score_consistency).toFixed(2)
+  })).sort((a, b) => b.sim_rating - a.sim_rating);
+
+  const simBowl = BOWLERS.filter(b => b.hp_balls >= minB).map(b => ({
+    ...b,
+    sim_rating: +(w1 * (0.533333 * b.crunch_workload + 0.466667 * b.score_hp_excellence) + w2 * b.score_baseline_elevation + w3 * b.score_consistency).toFixed(2)
+  })).sort((a, b) => b.sim_rating - a.sim_rating);
+
+  return { simBat, simBowl };
+}
+
+function updateSimulator() {
+  const { simBat, simBowl } = getSimulatedLists();
+  if (simBat.length > 0) document.getElementById('kpiTopBat').textContent = simBat[0].player_name;
+  if (simBowl.length > 0) document.getElementById('kpiTopBowl').textContent = simBowl[0].player_name;
+
+  document.getElementById('top10BatBody').innerHTML = simBat.slice(0, 10).map((r, idx) => `
+    <tr class="hover:bg-slate-800/40 transition">
+      <td class="py-2.5 px-3"><span class="inline-block px-2 py-0.5 rounded bg-pink-500/20 text-pink-400 font-extrabold">#${idx + 1}</span></td>
+      <td class="py-2.5 px-3"><div class="font-bold text-white">${r.player_name}</div><div class="text-[11px] text-slate-400">${r.hp_runs} runs (${r.hp_balls}b)</div></td>
+      <td class="py-2.5 px-3 text-right font-extrabold text-blue-400">${r.sim_rating.toFixed(2)}</td>
+      <td class="py-2.5 px-3 text-right"><span class="font-bold text-white">${r.hp_sr.toFixed(1)}</span> <span class="text-emerald-400 font-semibold">(+${r.sr_delta_hp_vs_us.toFixed(1)})</span></td>
+      <td class="py-2.5 px-3"><span class="inline-block px-2 py-0.5 rounded bg-blue-500/15 text-blue-300 font-medium">${r.rr_role}</span></td>
+    </tr>
+  `).join('');
+
+  document.getElementById('top10BowlBody').innerHTML = simBowl.slice(0, 10).map((r, idx) => `
+    <tr class="hover:bg-slate-800/40 transition">
+      <td class="py-2.5 px-3"><span class="inline-block px-2 py-0.5 rounded bg-blue-500/20 text-blue-400 font-extrabold">#${idx + 1}</span></td>
+      <td class="py-2.5 px-3"><div class="font-bold text-white">${r.player_name}</div><div class="text-[11px] text-slate-400">${r.hp_wkts} wkts (${r.hp_balls}b)</div></td>
+      <td class="py-2.5 px-3 text-right font-extrabold text-blue-400">${r.sim_rating.toFixed(2)}</td>
+      <td class="py-2.5 px-3 text-right"><span class="font-bold text-white">${r.hp_econ.toFixed(2)}</span> <span class="text-emerald-400 font-semibold">(+${r.hp_econ_saved.toFixed(2)})</span></td>
+      <td class="py-2.5 px-3"><span class="inline-block px-2 py-0.5 rounded bg-pink-500/15 text-pink-300 font-medium">${r.rr_role}</span></td>
+    </tr>
+  `).join('');
+}
+
+function copyList(type) {
+  const { simBat, simBowl } = getSimulatedLists();
+  const list = (type === 'bat' ? simBat : simBowl).slice(0, 10);
+  const text = list.map((r, i) => `Rank ${i + 1}: ${r.player_name} (Rating ${r.sim_rating.toFixed(2)})`).join('\n');
+  const ta = document.createElement('textarea');
+  ta.value = text;
+  document.body.appendChild(ta);
+  ta.select();
+  document.execCommand('copy');
+  document.body.removeChild(ta);
+
+  const t = document.getElementById('toastMsg');
+  t.textContent = `Copied Top 10 ${type === 'bat' ? 'Batters' : 'Bowlers'} to clipboard!`;
+  t.classList.remove('hidden');
+  setTimeout(() => { t.classList.add('hidden'); }, 2200);
+}
+
+function renderFullBatters() {
+  const q = document.getElementById('searchBat').value.toLowerCase();
+  const sortKey = document.getElementById('sortBat').value;
+  const rows = BATTERS.filter(r => r.player_name.toLowerCase().includes(q) || (r.teams && r.teams.toLowerCase().includes(q)))
+    .sort((a, b) => b[sortKey] - a[sortKey]);
+
+  document.getElementById('fullBatBody').innerHTML = rows.map((r, i) => `
+    <tr class="hover:bg-slate-800/40">
+      <td class="py-2 px-3"><span class="px-2 py-0.5 rounded bg-pink-500/15 text-pink-400 font-bold">#${i + 1}</span></td>
+      <td class="py-2 px-3 font-bold text-white">${r.player_name} <span class="text-slate-500 font-normal">(ID:${r.striker_id})</span></td>
+      <td class="py-2 px-3 text-right font-extrabold text-blue-400">${r.pressure_rating.toFixed(2)}</td>
+      <td class="py-2 px-3 text-right text-slate-300">${r.hp_innings} (${r.hp_balls}b)</td>
+      <td class="py-2 px-3 text-right text-slate-200">${r.hp_runs}</td>
+      <td class="py-2 px-3 text-right text-slate-400">${r.us_sr.toFixed(1)}</td>
+      <td class="py-2 px-3 text-right font-bold text-white">${r.hp_sr.toFixed(1)}</td>
+      <td class="py-2 px-3 text-right font-bold text-emerald-400">+${r.sr_delta_hp_vs_us.toFixed(1)}</td>
+      <td class="py-2 px-3 text-right text-slate-200">${r.hp_6s}</td>
+      <td class="py-2 px-3 text-right text-slate-300">${r.hp_dot_pct.toFixed(1)}%</td>
+      <td class="py-2 px-3 text-right text-slate-200">${r.hp_consistency_pct.toFixed(1)}%</td>
+    </tr>
+  `).join('');
+}
+
+function renderFullBowlers() {
+  const q = document.getElementById('searchBowl').value.toLowerCase();
+  const sortKey = document.getElementById('sortBowl').value;
+  const rows = BOWLERS.filter(r => r.player_name.toLowerCase().includes(q) || (r.teams && r.teams.toLowerCase().includes(q)))
+    .sort((a, b) => b[sortKey] - a[sortKey]);
+
+  document.getElementById('fullBowlBody').innerHTML = rows.map((r, i) => `
+    <tr class="hover:bg-slate-800/40">
+      <td class="py-2 px-3"><span class="px-2 py-0.5 rounded bg-blue-500/15 text-blue-400 font-bold">#${i + 1}</span></td>
+      <td class="py-2 px-3 font-bold text-white">${r.player_name} <span class="text-slate-500 font-normal">(ID:${r.bowler_id})</span></td>
+      <td class="py-2 px-3 text-right font-extrabold text-blue-400">${r.pressure_rating.toFixed(2)}</td>
+      <td class="py-2 px-3 text-right text-slate-300">${r.hp_innings} (${r.hp_balls}b)</td>
+      <td class="py-2 px-3 text-right font-bold text-white">${r.hp_wkts}</td>
+      <td class="py-2 px-3 text-right text-slate-400">${r.us_econ.toFixed(2)}</td>
+      <td class="py-2 px-3 text-right font-bold text-white">${r.hp_econ.toFixed(2)}</td>
+      <td class="py-2 px-3 text-right font-bold text-emerald-400">+${r.hp_econ_saved.toFixed(2)}</td>
+      <td class="py-2 px-3 text-right text-slate-400">${r.us_sr.toFixed(1)}</td>
+      <td class="py-2 px-3 text-right font-bold text-white">${r.hp_sr.toFixed(1)}</td>
+      <td class="py-2 px-3 text-right text-slate-200">${r.hp_consistency_pct.toFixed(1)}%</td>
+    </tr>
+  `).join('');
+}
+
+function renderDeathOvers() {
+  document.getElementById('deathTeamsBody').innerHTML = IPL_TEAMS.map((r, i) => `
+    <tr class="${r.team_name === 'Rajasthan Royals' ? 'bg-pink-500/15 font-bold' : 'hover:bg-slate-800/40'}">
+      <td class="py-2 px-3"><span class="px-2 py-0.5 rounded bg-pink-500/15 text-pink-400 font-bold">#${i + 1}</span></td>
+      <td class="py-2 px-3 text-white">${r.team_name}</td>
+      <td class="py-2 px-3 text-right text-slate-300">${r.matches}</td>
+      <td class="py-2 px-3 text-right text-slate-300">${r.balls}</td>
+      <td class="py-2 px-3 text-right font-bold text-blue-400">${r.sixes}</td>
+      <td class="py-2 px-3 text-right text-slate-200">${r.sr.toFixed(1)}</td>
+      <td class="py-2 px-3 text-right font-bold text-emerald-400">${r.six_pct.toFixed(2)}%</td>
+    </tr>
+  `).join('');
+
+  document.getElementById('deathPlayersBody').innerHTML = DEATH_PLAYERS.map((r, i) => `
+    <tr class="hover:bg-slate-800/40">
+      <td class="py-2 px-3"><span class="px-2 py-0.5 rounded bg-blue-500/15 text-blue-400 font-bold">#${i + 1}</span></td>
+      <td class="py-2 px-3 font-bold text-white">${r.player_name}</td>
+      <td class="py-2 px-3 text-right text-slate-300">${r.innings} (${r.balls}b)</td>
+      <td class="py-2 px-3 text-right text-slate-200">${r.runs}</td>
+      <td class="py-2 px-3 text-right font-bold text-blue-400">${r.sixes}</td>
+      <td class="py-2 px-3 text-right font-bold text-white">${r.sr.toFixed(1)}</td>
+      <td class="py-2 px-3 text-right font-bold text-emerald-400">${r.six_pct.toFixed(2)}%</td>
+    </tr>
+  `).join('');
+}
+
+function initCharts() {
+  if (typeof Chart === 'undefined') return;
+  Chart.defaults.color = '#CBD5E1';
+  Chart.defaults.borderColor = 'rgba(148, 163, 184, 0.15)';
+
+  new Chart(document.getElementById('chartPressureTiers'), {
+    type: 'bar',
+    data: {
+      labels: ['Low (<40)', 'Moderate (40-60)', 'High (60-75)', 'Extreme (75+)'],
+      datasets: [
+        { label: 'Wickets Lost per 100 Balls (%)', data: [4.70, 4.97, 7.18, 9.93], backgroundColor: '#EC4899', borderRadius: 4 },
+        { label: 'Sixes Hit per 100 Balls (%)', data: [6.28, 5.50, 8.74, 8.54], backgroundColor: '#3B82F6', borderRadius: 4 }
+      ]
+    },
+    options: { responsive: true, maintainAspectRatio: false }
+  });
+
+  new Chart(document.getElementById('chartDeathProgression'), {
+    type: 'line',
+    data: {
+      labels: ['Over 16', 'Over 17', 'Over 18', 'Over 19', 'Over 20'],
+      datasets: [
+        { label: 'Six-Hitting Rate (%)', data: [7.91, 8.16, 8.96, 9.64, 12.65], borderColor: '#3B82F6', backgroundColor: '#3B82F6', tension: 0.25, pointRadius: 4 },
+        { label: 'Wicket Risk (%)', data: [6.20, 6.81, 7.66, 9.68, 13.85], borderColor: '#EC4899', backgroundColor: '#EC4899', tension: 0.25, pointRadius: 4 }
+      ]
+    },
+    options: { responsive: true, maintainAspectRatio: false }
+  });
+
+  const t10 = BATTERS.slice(0, 10);
+  new Chart(document.getElementById('chartTopBatters'), {
+    type: 'bar',
+    data: {
+      labels: t10.map(r => r.player_name.split(' ').slice(-1)[0]),
+      datasets: [
+        { label: 'High-Pressure SR', data: t10.map(r => r.hp_sr), backgroundColor: '#EC4899', borderRadius: 4 },
+        { label: 'Normal Baseline SR', data: t10.map(r => r.us_sr), backgroundColor: '#64748B', borderRadius: 4 }
+      ]
+    },
+    options: { indexAxis: 'y', responsive: true, maintainAspectRatio: false }
+  });
+
+  new Chart(document.getElementById('chartIplTeams'), {
+    type: 'bar',
+    data: {
+      labels: IPL_TEAMS.map(r => r.team_name),
+      datasets: [
+        {
+          label: 'Death Overs Six Rate (%)',
+          data: IPL_TEAMS.map(r => r.six_pct),
+          backgroundColor: IPL_TEAMS.map(r => r.team_name === 'Rajasthan Royals' ? '#EC4899' : '#3B82F6'),
+          borderRadius: 4
+        }
+      ]
+    },
+    options: { indexAxis: 'y', responsive: true, maintainAspectRatio: false }
+  });
+}
+
+updateSimulator();
+renderFullBatters();
+renderFullBowlers();
+renderDeathOvers();
+window.addEventListener('load', initCharts);
+</script>
+</body>
+</html>
